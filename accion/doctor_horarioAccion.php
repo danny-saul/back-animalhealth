@@ -10,9 +10,12 @@ class Doctor_HorarioAccion
 
         switch ($metodo_http) {
             case 'get':
-                /* if ($ruta == '/doctor_horario/verTodo') {
-                    Route::get('/doctor_horario/verTodo', 'doctor_horarioController@verTodo');
-                }  */
+                if ($ruta == '/doctor_horario/listarDoctorHorario' && $params) {
+                    Route::get('/doctor_horario/listarDoctorHorario/:id_doctor', 'doctor_horarioController@listarDoctorHorario',$params);
+                }else
+                if ($ruta == '/doctor_horario/verhorario') {
+                    Route::get('/doctor_horario/verhorario', 'doctor_horarioController@verhorariod');
+                }
               
                 break;
 

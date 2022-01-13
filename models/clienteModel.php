@@ -5,7 +5,7 @@ require_once 'core/conexion.php';
 require_once 'models/personaModel.php';
 require_once 'models/mascotaModel.php';
 require_once 'models/citasModel.php';
-
+require_once 'models/ventasModel.php';
 
 
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +27,10 @@ class Cliente extends Model{
     
     public function cita(){ 
         return $this->hasMany(Citas::class);
+    }
+
+    public function ventas(){ 
+        return $this->hasMany(Ventas::class);
     }
 
     

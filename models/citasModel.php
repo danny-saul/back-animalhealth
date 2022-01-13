@@ -6,7 +6,7 @@ require_once 'models/doctorModel.php';
 require_once 'models/serviciosModel.php';
 require_once 'models/clienteModel.php';
 require_once 'models/estado_citaModel.php';
-require_once 'models/horarios_citasModel.php';
+require_once 'models/horarios_atencionModel.php';
 require_once 'models/mascotaModel.php';
 require_once 'models/recetaModel.php';
 
@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Model;
 class Citas extends Model{
 
     protected $table = "citas";
-    protected $filleable = ['doctor_id','servicios_id','mascota_id','cliente_id','estado_cita_id','horarios_citas_id','fecha','estado'];
+    protected $filleable = ['doctor_id','servicios_id','mascota_id','cliente_id','estado_cita_id','horarios_atencion_id','fecha','estado'];
     public $timestamps = false;
  
      //  muchos a 1 bellon to 
@@ -38,8 +38,8 @@ class Citas extends Model{
         return $this->belongsTo(Estado_Cita::class); 
     }
 
-    public function horarios_citas(){ 
-        return $this->belongsTo(Horarios_Citas::class); 
+    public function horarios_atencion(){ 
+        return $this->belongsTo(Horarios_Atencion::class); 
     }
 
     public function mascota(){ 
@@ -49,7 +49,11 @@ class Citas extends Model{
     public function receta(){
         return $this->hasMany(Receta::class,'cita_id','id');
     }
+   
+
 
     
 
 }
+
+

@@ -17,7 +17,7 @@ class ComprasAccion
                 }else //listar cliente sin parametro
                 if ($ruta == '/compras/listar') {
                     Route::get('/compras/listar', 'comprasController@listarcompras');
-                }                
+                }            
             break;
 
             case 'post':

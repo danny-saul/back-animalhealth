@@ -121,7 +121,14 @@ class DoctorController
         $dataDoctor = Doctor::find($id);
 
         if($dataDoctor){
-            $dataDoctor->persona;
+         
+                $dataDoctor->persona;
+                $dh = $dataDoctor->doctor_horario;
+                foreach($dh as $item){
+                    $item->horarios_atencion;
+                }
+            
+          
             $response = [
                 'status' => true,
                 'mensaje' => 'Si ahi datos',
@@ -206,6 +213,10 @@ class DoctorController
         if($dataDoctor){
             foreach($dataDoctor as $chelas){
                 $chelas->persona;
+                $dh = $chelas->doctor_horario;
+                foreach($dh as $item){
+                    $item->horarios_atencion;
+                }
             }
             $response = [
                 'status' => true,
@@ -216,7 +227,7 @@ class DoctorController
             $response = [
                 'status' => false,
                 'mensaje' => 'no existen datos',
-                'doctor' => [],
+                'doctor' => null,
             ];
         }
         echo json_encode($response);

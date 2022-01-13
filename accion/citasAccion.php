@@ -20,16 +20,17 @@ class CitasAccion
                 }else 
                 if ($ruta == '/citas/actualizar_cita' && $params) {
                     Route::get('/citas/actualizar_cita/:id_cita/:estado_id', 'citasController@actualizarCitaPendientes',$params);
+                }else 
+                if ($ruta == '/citas/cancelar' && $params) {
+                    Route::get('/citas/cancelar/:id_cita/:estado_id', 'citasController@cancelar',$params);
                 }                
             break;
 
             case 'post':
                 if($ruta == '/citas/guardar'){
                     Route::post('/citas/guardar', 'citasController@guardar');
-                }/* else
-                if($ruta == '/citas/eliminar'){
-                    Route::post('/citas/eliminar', 'citasController@eliminar');
-                }else
+                } 
+                /*else
                 if($ruta == '/citas/editar'){
                     Route::post('/citas/editar', 'citasController@editar');
                 } */                       

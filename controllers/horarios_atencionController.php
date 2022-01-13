@@ -6,33 +6,62 @@ require_once 'app/error.php';
 require_once 'models/horarios_atencionModel.php';
 require_once 'models/doctor_HorarioModel.php';
 
-class Horarios_AtencionController{
+class Horarios_AtencionController
+{
 
     private $cors;
-  
 
     public function __construct()
     {
         $this->cors = new Cors();
     }
 
-    public function Horarioatencion(){
+    public function intervaloHora($hora_inicio, $hora_fin, $intervalo)
+    {
+        $hora_inicio = new DateTime($hora_inicio);
+        $hora_fin = new DateTime($hora_fin);
+        $hora_fin->modify('+1 second'); // Añadimos 1 segundo para que nos muestre $hora_fin
+
+        // Si la hora de inicio es superior a la hora fin
+        // añadimos un día más a la hora fin
+        if ($hora_inicio > $hora_fin) {
+
+            $hora_fin->modify('+1 day');
+        }
+
+        // Establecemos el intervalo en minutos
+        $intervalo = new DateInterval('PT' . $intervalo . 'M');
+
+        // Sacamos los periodos entre las horas
+        $periodo = new DatePeriod($hora_inicio, $intervalo, $hora_fin);
+
+        foreach ($periodo as $hora) {
+
+            // Guardamos las horas intervalos
+            $horas[] = $hora->format('H:i:s');
+        }
+
+        return $horas;
+    }
+
+    public function Horarioatencion()
+    {
         $this->cors->corsJson();
 
-        $response=[];
-        $dataHorarioA = Horarios_Atencion::where('estado','A')->get();
-        if($dataHorarioA){
-            $response=[
-                'status' => true, 
-                'message' => 'existen datos', 
-                'horario'=>$dataHorarioA
+        $response = [];
+        $dataHorarioA = Horarios_Atencion::where('estado', 'A')->get();
+        if ($dataHorarioA) {
+            $response = [
+                'status' => true,
+                'message' => 'existen datos',
+                'horario' => $dataHorarioA,
             ];
 
-        }else{
-            $response=[
-                'status' => false, 
-                'message' => 'no existen datos', 
-                'horario'=>null
+        } else {
+            $response = [
+                'status' => false,
+                'message' => 'no existen datos',
+                'horario' => null,
             ];
 
         }
@@ -40,56 +69,57 @@ class Horarios_AtencionController{
 
     }
 
-    public function guardar(Request $request){
+    public function guardar(Request $request)
+    {
         $this->cors->corsJson();
         $response = [];
         $dataRequestHorario = $request->input('horario_atencion');
 
-        if($dataRequestHorario){
+        if ($dataRequestHorario) {
             $horaE = $dataRequestHorario->horaE;
             $horaS = $dataRequestHorario->horaS;
             $fecha = $dataRequestHorario->fecha;
-
-          
+            $inter = $dataRequestHorario->intervalo;
+         
             $existeFecha = Horarios_Atencion::where('fecha', $fecha)->get()->first();
-
-             if($existeFecha){
+            
+            if ($existeFecha) {
                 $response = [
                     'status' => false,
                     'mensaje' => 'La fecha ya existe',
                     'horario_atencion' => null,
                 ];
-            }else{
-
-                $nuevoHorario = new Horarios_Atencion();
-                $nuevoHorario->horaE = $horaE;
-                $nuevoHorario->horaS = $horaS;
-                $nuevoHorario->fecha = $fecha;
-                $nuevoHorario->libre = 'S';
-                $nuevoHorario->estado = 'A';
-
+            } else {
+             
+                $horas_horario =  $this->intervaloHora($horaE,$horaS, $inter); //array de horas
                 
-                if ($nuevoHorario->save()) {
-                    $response = [
-                        'status' => true,
-                        'mensaje' => 'El horario de atencion se ha guardado corectamente',
-                        'horario_atencion' => $nuevoHorario,
-                    ];
-                } else {
-                    $response = [
-                        'status' => false,
-                        'mensaje' => 'El horario de atencion no se pudo guardar',
-                        'horario_atencion' => null,
-                    ];
+                for ($i=0; $i < count($horas_horario) ; $i++) { 
+                   $nuevoHorario = new Horarios_Atencion();    
+                   $nuevoHorario->horaE = $horaE;
+                   $nuevoHorario->horaS = $horaS;
+                   $nuevoHorario->fecha = $fecha;
+                   $nuevoHorario->intervalo = $inter;
+                   $nuevoHorario->horario = $horas_horario[$i];
+                   $nuevoHorario->libre = 'S';
+                   $nuevoHorario->estado = 'A';
+                
+                   $nuevoHorario->save();
                 }
+
+                $response = [
+                    'status' => true,
+                    'mensaje' => 'El horario de atencion se ha guardado corectamente',
+                    'horario_atencion' => $nuevoHorario,
+                ];
             }
-        }else{
+        } else {
             $response = [
                 'status' => false,
                 'mensaje' => 'no hay datos par procesar',
-                'horario_atencion' => null
-             ];
+                'horario_atencion' => null,
+            ];
         }
+        
         echo json_encode($response);
     }
 
@@ -102,7 +132,7 @@ class Horarios_AtencionController{
         if ($nuevo_libre == 'S' || $nuevo_libre == 'N') {
 
             $horario_libre = Horarios_Atencion::where('libre', $nuevo_libre)->get();
-        
+
             $response = [
                 'status' => true,
                 'mensaje' => 'Horarios de Atencion encontrados',
@@ -179,6 +209,13 @@ class Horarios_AtencionController{
 
     }
 
+    public function getdoctorhorario()
+    {
+        $this->cors->corsJson();
+        $doctorHorario = Doctor_Horario::where('estado', 'A')->get();
+        echo json_encode($doctorHorario);
+    }
+
     public function doctorHorario($params)
     {
         $this->cors->corsJson();
@@ -245,13 +282,14 @@ class Horarios_AtencionController{
     }
 
     public function listarHorasDoctorDt()
-    {     
+    {
         $this->cors->corsJson();
         $dataThorario = Horarios_Atencion::where('estado', 'A')->get();
-        $data = [];   $i = 1;
+        $data = [];
+        $i = 1;
 
         foreach ($dataThorario as $dc) {
-    
+
             $icono = $dc->estado == 'I' ? '<i class="fa fa-check-circle fa-lg"></i>' : '<i class="fa fa-trash fa-lg"></i>';
             $clase = $dc->estado == 'I' ? 'btn-success btn-sm' : 'btn-dark btn-sm';
             $other = $dc->estado == 'A' ? 0 : 1;
@@ -285,33 +323,34 @@ class Horarios_AtencionController{
 
     }
 
-    public function eliminarhorasdoctor(Request $request){
+    public function eliminarhorasdoctor(Request $request)
+    {
         $this->cors->corsJson();
         $horarioArequest = $request->input('horarios_atencion');
         $id = intval($horarioArequest->id);
-      
+
         $horariosAtencion = Horarios_Atencion::find($id);
         $response = [];
-        if($horarioArequest){
-            if($horariosAtencion){
+        if ($horarioArequest) {
+            if ($horariosAtencion) {
                 $horariosAtencion->estado = 'I';
                 $horariosAtencion->save();
-                
+
                 $response = [
                     'status' => true,
                     'mensaje' => "Se ha eliminado la hora",
-                ];        
-            }else{
+                ];
+            } else {
                 $response = [
                     'status' => false,
                     'mensaje' => "No Se ha eliminado la hora",
-                ];               
+                ];
             }
-        }else{
+        } else {
             $response = [
                 'status' => false,
                 'memsaje' => 'no hay datos para procesar',
-                'horarios_atencion' => null
+                'horarios_atencion' => null,
             ];
         }
         echo json_encode($response);
@@ -323,13 +362,13 @@ class Horarios_AtencionController{
         $this->cors->corsJson();
         $horarioArequest = $request->input('horarios_atencion');
         $id = intval($horarioArequest->id);
-    
+
         $horariosAtencion = Horarios_Atencion::find($id);
         $response = [];
 
         if ($horarioArequest) {
             if ($horariosAtencion) {
- 
+
                 $horariosAtencion->horaE = $horarioArequest->horaE;
                 $horariosAtencion->horaS = $horarioArequest->horaS;
                 $horariosAtencion->fecha = $horarioArequest->fecha;
@@ -340,7 +379,7 @@ class Horarios_AtencionController{
                     'status' => true,
                     'mensaje' => 'Se ha actualizado el Horario de Atencion',
                 ];
-            }else{
+            } else {
                 $response = [
                     'status' => false,
                     'mensaje' => 'No se ha actualizado el Horario de Atencion',
@@ -355,23 +394,24 @@ class Horarios_AtencionController{
         echo json_encode($response);
     }
 
-    public function horarioAlistar($params){
+    public function horarioAlistar($params)
+    {
         $this->cors->corsJson();
         $id = intval($params['id']);
         $response = [];
         $horarios_atencion = Horarios_Atencion::find($id);
 
-        if($horarios_atencion){
+        if ($horarios_atencion) {
             $response = [
                 'status' => true,
                 'mensaje' => 'hay datos',
-                'horarios_atencion' => $horarios_atencion
+                'horarios_atencion' => $horarios_atencion,
             ];
-        }else{
+        } else {
             $response = [
                 'status' => false,
                 'mensaje' => 'no ahi datos',
-                'horarios_atencion' => null
+                'horarios_atencion' => null,
             ];
         }
         echo json_encode($response);

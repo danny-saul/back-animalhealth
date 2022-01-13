@@ -24,6 +24,9 @@ class Producto extends Model{
         return $this->hasMany(Detalle_Compra::class);
     }
     
+    public function detalle_venta(){
+        return $this->hasMany(Detalle_Venta::class);
+    }
 
 
 }

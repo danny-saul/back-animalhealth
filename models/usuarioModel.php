@@ -5,7 +5,7 @@ require_once 'core/conexion.php';
 require_once 'models/rolModel.php';
 require_once 'models/personaModel.php';
 require_once 'models/comprasModel.php';
-
+require_once 'models/ventasModel.php';
 
 
 
@@ -29,5 +29,10 @@ class Usuario extends Model{
     public function compras(){
         return $this->hasMany(Compras::class);
     }
+
+    public function ventas(){
+        return $this->hasMany(Ventas::class);
+    }
+
 
 }
