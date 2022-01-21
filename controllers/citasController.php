@@ -94,12 +94,11 @@ class CitasController
 
             if ($estado == 1) {
                 $estado = '<span class="badge bg-warning" style="font-size: 1rem;">' . $dataEstadoCita->detalle . '</span>';
-            } else if ($estado==2) {
+            } else if ($estado == 2) {
                 $estado = '<span class="badge bg-success" style="font-size: 1rem;">' . $dataEstadoCita->detalle . '</span>';
-            }
-            else {
+            } else {
                 $estado = '<span class="badge bg-danger" style="font-size: 1rem;">' . $dataEstadoCita->detalle . '</span>';
-            } 
+            }
 
             $botones = '<div class="text-center">
                             <button class="btn btn-sm btn-outline-primary" onclick="ver_cita(' . $dc->id . ')">
@@ -210,7 +209,7 @@ class CitasController
         $mensajes = '';
 
         $cita = Citas::find($id_cita);
-        $response = [];
+        $response = [];  $receta_id = '';  $cita_id= '';
 
         if ($cita) {
             $rec = $cita->receta;
@@ -220,6 +219,7 @@ class CitasController
             foreach ($rec as $item) { //receta
                 $receta_id = $item->id;
             }
+     
 
             $receta = Receta::find($receta_id);
             $receta->cita_id = $cita_id;
@@ -256,16 +256,18 @@ class CitasController
         echo json_encode($response);
     }
 
-    public function cancelar($params){
+    public function cancelar($params)
+    {
 
         $this->cors->corsJson();
         $id_cita = intval($params['id_cita']);
-        $id_estado = intval($params['estado_id']);//3 cancelado
-        $mensajes = '';    $response = [];
+        $id_estado = intval($params['estado_id']); //3 cancelado
+        $mensajes = '';
+        $response = [];
 
         $cita = Citas::find($id_cita);
 
-        if($cita){
+        if ($cita) {
             $hc_id = $cita->horarios_atencion_id;
 
             $cita->estado_cita_id = $id_estado;
@@ -285,7 +287,7 @@ class CitasController
                 'status' => true,
                 'mensaje' => $mensajes,
             ];
-        }else {
+        } else {
             $response = [
                 'status' => false,
                 'mensaje' => 'No se puede cancelar la cita',
@@ -293,4 +295,166 @@ class CitasController
         }
         echo json_encode($response);
     }
+
+    public function datatableclientecitaId($params)
+    {
+        $this->cors->corsJson();
+
+        $cliente_id = intval($params['cliente_id']);
+        $cita = Citas::where('cliente_id', $cliente_id)->get();
+
+        $data = [];  $i = 1;
+            foreach ($cita as $citasc) {
+                $cli = $citasc->cliente->persona;
+                $masc = $citasc->mascota->nombre;
+                $doc = $citasc->doctor->persona;
+                $serv = $citasc->servicios->nombre_servicio;
+                $hor = $citasc->horarios_atencion->horario;
+                $dataEstadoCita = $citasc->estado_cita;
+
+                $estado = $citasc->estado_cita_id;
+                //  $horario =$dc->horarios_atencion_id;
+
+                if ($estado == 1) {
+                    $estado = '<span class="badge bg-warning" style="font-size: 1rem;">' . $dataEstadoCita->detalle . '</span>';
+                } else if ($estado == 2) {
+                    $estado = '<span class="badge bg-success" style="font-size: 1rem;">' . $dataEstadoCita->detalle . '</span>';
+                } else {
+                    $estado = '<span class="badge bg-danger" style="font-size: 1rem;">' . $dataEstadoCita->detalle . '</span>';
+                }
+
+                $botones = '<div class="text-center">
+                            <button class="btn btn-sm btn-outline-danger" onclick="cancelar_cita(' . $citasc->id . ')">
+                            <i class="fas fa-times"></i>
+                            </button>
+                        </div>';
+
+                $data[] = [
+                    0 => $i,
+                    1 => $cli->nombre . ' ' . $cli->apellido,
+                    2 => $masc,
+                    3 => $doc->nombre . ' ' . $doc->apellido,
+                    4 => $serv,
+                    5 => $hor,
+                    6 => $estado,
+                    7 => $botones,
+                ];
+                $i++;
+
+            }
+
+            $result = [
+                'sEcho' => 1,
+                'iTotalRecords' => count($data),
+                'iTotalDisplayRecords' => count($data),
+                'aaData' => $data,
+            ];
+            echo json_encode($result);
+    }
+
+    public function serviciomasAdquirido($params){
+        $this->cors->corsJson();
+        $inicio = $params['inicio'];
+        $fin = $params['fin'];
+        $limite = intval($params['limite']);
+
+        $atendidas = 2;  $response = [];
+
+        $cita = Citas::where('fecha','>=',$inicio)
+                        ->where('fecha','<=',$fin)
+                        ->where('estado','A')
+                        ->where('estado_cita_id',$atendidas)
+                        ->take($limite)->get();
+
+        $servicios_id = [];  $servicio2 = [];  $valorConsulta = 5; $total = [];
+
+        foreach($cita as $c){
+           $servicio =  $c->servicios;
+           $aux = [
+               'id' => $servicio->id,
+               'nombre' => $servicio->nombre_servicio,
+               'precio' => $servicio->precio + $valorConsulta,
+           ];
+
+           $servicios_id[] = (object)$aux;
+           $servicio2[] =  $servicio->id;
+           $total[] =  $servicio->precio + $valorConsulta;
+        }
+
+        //echo json_encode(count($servicios_id)); die();
+
+        $totalGene = 0;
+        //sumar los totales
+        for ($i=0; $i < count($total); $i++) {
+            $totalGene +=$total[$i];
+        }
+
+
+        $noRepetidos = array_values(array_unique($servicio2));
+
+        $newArray = [];  $contador = 0; $nombreS = ""; $cont = 0;
+
+        //algoritmo para contar y eliminar los elementos repetidos de un array
+        for ($i=0; $i < count($noRepetidos); $i++) {
+            foreach($servicios_id as $item){
+                if($item->id ===  $noRepetidos[$i]){
+                    $contador += $item->precio;
+                    $nombreS = $item->nombre;
+                }
+            }
+            $aux = [
+                'servicio_id' => $noRepetidos[$i],
+                'precio' => $contador,
+                'nombre_servicio' => $nombreS
+            ];
+            
+            $contador = 0;
+            $newArray[] = (array)$aux;
+            $aux = []; 
+        }
+
+        //echo json_encode($cont); die();
+
+        $arraySecond = [];
+
+        //recortar segun su limite
+        if(count($newArray) < $limite){
+            $arraySecond = $newArray;
+        }else if(count($newArray) == $limite){
+            $arraySecond = $newArray; 
+        }else if(count($newArray) > $limite){
+            for ($i=0; $i < $limite ; $i++) { 
+                $arraySecond[] = $newArray[$i];
+            }
+        }
+
+        
+        $response = [
+            'lista' => $arraySecond,
+            'total_general' => $totalGene
+  
+        ];
+
+        //hacergrafico estadistico
+        
+          
+        echo json_encode($response);
+    
+
+
+    }
+
+    /* function ordenarArray($array){
+        for ($i=0; $i < count($array) ; $i++) { 
+            for ($j=0; $j < count($array) - $i; $j++) { 
+                if($array[$j]->precio > $array[$j + 1]->precio){
+                    $chelas = $array[$j + 1];
+                    $array[$j + 1] = $array[$j];
+                    $array[$j] = $chelas;
+                }
+            }
+            
+        }
+        return $array;
+    } */
 }

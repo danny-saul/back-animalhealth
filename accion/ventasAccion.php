@@ -17,7 +17,13 @@ class VentasAccion
                 }else //listar cliente sin parametro
                 if ($ruta == '/ventas/listar') {
                     Route::get('/ventas/listar', 'ventasController@listarventas');
-                }            
+                }  
+                else  
+                if ($ruta == '/ventas/totales') {
+                    Route::get('/ventas/totales', 'ventasController@ventastotales');
+                }  
+                          
+
             break;
 
             case 'post':

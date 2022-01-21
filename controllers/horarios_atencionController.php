@@ -101,6 +101,7 @@ class Horarios_AtencionController
                    $nuevoHorario->intervalo = $inter;
                    $nuevoHorario->horario = $horas_horario[$i];
                    $nuevoHorario->libre = 'S';
+                   $nuevoHorario->asignacion ='N';
                    $nuevoHorario->estado = 'A';
                 
                    $nuevoHorario->save();
@@ -126,12 +127,12 @@ class Horarios_AtencionController
     public function horarioAtencionlibre($params)
     {
         $this->cors->corsJson();
-        $nuevo_libre = strtoupper($params['libre']);
+        $asignacion = strtoupper($params['asignacion']);
         $response = [];
 
-        if ($nuevo_libre == 'S' || $nuevo_libre == 'N') {
+        if ($asignacion == 'S' || $asignacion == 'N') {
 
-            $horario_libre = Horarios_Atencion::where('libre', $nuevo_libre)->get();
+            $horario_libre = Horarios_Atencion::where('asignacion', $asignacion)->get();
 
             $response = [
                 'status' => true,
@@ -178,7 +179,8 @@ class Horarios_AtencionController
                 if ($doctorHorario->save()) {
                     //actualizar el horarios de atencion
                     $horarioAtencion = Horarios_Atencion::find($datos->horarios_atencion_id);
-                    $horarioAtencion->libre = 'N';
+                   // $horarioAtencion->libre = 'N';
+                    $horarioAtencion->asignacion= 'S';
                     $horarioAtencion->save();
 
                     $response = [
@@ -222,28 +224,37 @@ class Horarios_AtencionController
         $idDoctor = intval($params['id']);
 
         $doctorHorario = Doctor_Horario::where('doctor_id', $idDoctor)->get();
-        $response = [];
+        $response = []; $data = [];
 
-        if (count($doctorHorario) == 0) {
-            $response = [
-                'status' => false,
-                'mensaje' => 'No tiene horas de atencion asignadas',
-                'doctor_horario' => null,
-            ];
-        } else {
+         if(count($doctorHorario) > 0){
             foreach ($doctorHorario as $dh) {
+                $id =  $dh->horarios_atencion->id;         
+                $fechaHA =  $dh->horarios_atencion->fecha;
+                $horario = $dh->horarios_atencion->horario;
+       
                 $aux = [
-                    'doctor_horario' => $dh->horarios_atencion,
+                    'id' => $id,
+                    'fecha' => $fechaHA,
+                    'horario' => $horario,
                 ];
+
+                $data[] = (object)$aux;
             }
             $response = [
                 'status' => true,
                 'mensaje' => 'Si ahi hora de atencion',
-                'doctor_horario' => $doctorHorario,
+                'doctor_horario' => $data,
+            ];
+
+        } else {
+            $response = [
+                'status' => false,
+                'mensaje' => 'no ahi hora de atencion',
+                'doctor_horario' => null,
             ];
 
         }
-        echo (json_encode($response));
+        echo json_encode($response);
 
     }
 
@@ -260,10 +271,10 @@ class Horarios_AtencionController
 
         if ($doctor_horario->delete()) {
 
-            //actualizar horariode atencion
+            //eliminar horario de atencion
             $horarioAtencion = Horarios_Atencion::find($horarios_atencion_id);
-            $horarioAtencion->libre = 'S';
-            $horarioAtencion->save();
+            
+            $horarioAtencion->delete();
 
             $response = [
                 'status' => true,

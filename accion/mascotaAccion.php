@@ -12,6 +12,9 @@ class MascotaAccion
                 if ($ruta == '/mascota/listarmascota' && $params) {//listar mascota + cliente
                     Route::get('/mascota/listarmascota/:id', 'mascotaController@listarmascotaId', $params);
                 }else
+                if ($ruta == '/mascota/cargarMascotaCliente' && $params) {
+                    Route::get('/mascota/cargarMascotaCliente/:cliente_id', 'mascotaController@cargarMascotaCliente', $params);    
+                }else
                 if ($ruta == '/mascota/datatable') {
                     Route::get('/mascota/datatable', 'mascotaController@getMascotadatatable');
                 }else

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 class Horarios_Atencion extends Model{
 
     protected $table = "horarios_atencion";
-    protected $filleable = ['horaE','horaS','fecha','intervalo','horario','libre','estado'];
+    protected $filleable = ['horaE','horaS','fecha','intervalo','horario','libre','asignacion','estado'];
     public $timestamps = false;
 
      //  muchos a 1 bellon to 

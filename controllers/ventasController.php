@@ -75,7 +75,7 @@ class VentasController
                 $nuevaventa->fecha_venta= $datarequestventa->fecha_venta;
                 $nuevaventa->estado='A';
                 $nuevaventa->numero_venta= $nuevonumeroventa;
-                $nuevaventa->iva=floatval($datarequestventa->iva);
+               // $nuevaventa->iva=floatval($datarequestventa->iva);
 
                 if($nuevaventa->save()){
                     $detalleventacontroller = new Detalle_VentaController();
@@ -157,7 +157,7 @@ class VentasController
 
     public function datatable()  {     
         $this->cors->corsJson();
-        $dataverventas = Ventas::where('estado', 'A')->get();
+        $dataverventas = Ventas::where('estado', 'A')->orderBy('fecha_venta','desc')->get();
         $data = [];   $i = 1;
 
         foreach ($dataverventas as $dc) {
@@ -194,5 +194,40 @@ class VentasController
         ];
         echo json_encode($result);
 
+    }
+
+    public function ventastotales(){
+        $this->cors->corsJson();
+        $meses = [
+            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+        ];
+        $posicionMes = intval(date('m')) -1;
+        $diahoy = date('Y-m-d');
+        $inicioMes = date('Y').'-'.date('m').'-01';
+        $ventas = Ventas::where('estado','A')->where('fecha_venta','>=',$inicioMes)->where('fecha_venta','<=',$diahoy)->get();
+        $response = []; $total=0;
+        if($ventas){
+            foreach($ventas as $uess){
+                $aux =$total += $uess->total;
+                $total = round($aux,2);
+                
+            }
+            $response = [
+                'status'=>true,
+                'mensaje'=>'hay datos',
+                'total'=>$total,
+                'mes'=>$meses[$posicionMes],
+            ];
+
+        }else{
+            $response = [
+                'status'=>false,
+                'mensaje'=>'no hay datos',
+                'total'=>0,
+                'mes'=>$meses[$posicionMes],
+            ];
+        }
+        echo json_encode($response);
     }
 }

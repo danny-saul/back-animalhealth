@@ -11,6 +11,9 @@ class ComprasAccion
             case 'get':
                 if ($ruta == '/compras/listar' && $params) {
                     Route::get('/compras/listar/:id', 'comprasController@getcomprasid',$params);
+                }else  
+                if ($ruta == '/compras/comprasmensuales' && $params) {
+                    Route::get('/compras/comprasmensuales/:fecha_inicio/:fecha_fin', 'comprasController@rcomprasmensuales',$params);
                 }else
                 if ($ruta == '/compras/datatable') {
                     Route::get('/compras/datatable', 'comprasController@datatable');
@@ -18,6 +21,11 @@ class ComprasAccion
                 if ($ruta == '/compras/listar') {
                     Route::get('/compras/listar', 'comprasController@listarcompras');
                 }            
+                else  
+                if ($ruta == '/compras/totales') {
+                    Route::get('/compras/totales', 'comprasController@comprastotales');
+                } 
+                 
             break;
 
             case 'post':

@@ -78,7 +78,6 @@ class ProductoController
             $nombre = $datarequestproducto->nombre;
             $descripcion = $datarequestproducto->descripcion;
             $imagen = $datarequestproducto->imagen;
-            $precioventa = $datarequestproducto->precio_venta;
             $fecha = $datarequestproducto->fecha;
 
             $existecodigo = Producto::where('codigo', $codigo)->get()->first();
@@ -98,7 +97,7 @@ class ProductoController
                 $nuevoproducto->imagen = $imagen;
                 $nuevoproducto->stock = 0;
                 $nuevoproducto->precio_compra = 0.00;
-                $nuevoproducto->precio_venta = $precioventa;
+                $nuevoproducto->precio_venta = 0.00;
                 $nuevoproducto->fecha = $fecha;
                 $nuevoproducto->estado = 'A';
 

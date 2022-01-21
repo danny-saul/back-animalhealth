@@ -251,14 +251,23 @@ class UsuarioController
         } else {
             $usuario = Usuario::where('correo', $entrada)->get()->first();
 
+        
             $doctor = $usuario->persona->doctor;
-            $doc_id = [];
+            $doc_id = [];  $cliente_id = [];
 
             foreach ($doctor as $doc) {
                 $doc_id = intval($doc->id);
             }
 
             if ($usuario) {
+
+                $ArrayIdCliente = $usuario->persona->cliente;
+
+                foreach($ArrayIdCliente as $chelas){
+                   $cliente_id = $chelas->id;
+    
+                }
+
                 $us = $usuario;
                 //Segun con la verificacion de credenciales
                 if ($encriptar == $us->password) {
@@ -273,7 +282,8 @@ class UsuarioController
                             'rol' => $rol,
                             'persona' => $per,
                             'usuario' => $us,
-                            'doctor' => $doc_id 
+                            'doctor' => $doc_id,
+                            'cliente' => $cliente_id 
                         ];
                 } else {
                     $response = [
@@ -521,5 +531,29 @@ class UsuarioController
           }
           echo json_encode($response);
       }
+
+     public function cantidad(){
+         $this->cors->corsJson();
+         $datausuario= Usuario::where('estado','A')->get();
+         $response = [];
+
+         if($datausuario){
+             $response =[
+                 'status'=>true,
+                 'mensaje'=>'existe datos',
+                 'modelo'=>'Usuarios',
+                 'cantidad'=>$datausuario->count(),
+             ];
+         }else{
+            $response =[
+                'status'=>false,
+                'mensaje'=>'no existe datos',
+                'modelo'=>'Usuario',
+                'cantidad'=>0,
+            ];
+
+         }
+         echo json_encode($response);
+     }
 
 }

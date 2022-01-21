@@ -23,17 +23,24 @@ class CitasAccion
                 }else 
                 if ($ruta == '/citas/cancelar' && $params) {
                     Route::get('/citas/cancelar/:id_cita/:estado_id', 'citasController@cancelar',$params);
-                }                
+                }
+                else
+                if ($ruta == '/citas/datatableclientecitaId' && $params ) {
+                    Route::get('/citas/datatableclientecitaId/:cliente_id', 'citasController@datatableclientecitaId',$params);
+                }else
+                if ($ruta == '/citas/serviciomasAdquirido' && $params) {
+                    Route::get('/citas/serviciomasAdquirido/:inicio/:fin/:limite','citasController@serviciomasAdquirido',$params);
+                }                 
             break;
-
+            
             case 'post':
                 if($ruta == '/citas/guardar'){
                     Route::post('/citas/guardar', 'citasController@guardar');
                 } 
-                /*else
-                if($ruta == '/citas/editar'){
-                    Route::post('/citas/editar', 'citasController@editar');
-                } */                       
+                else
+                if($ruta == '/citas/guardar2'){
+                    Route::post('/citas/guardar2', 'citasController@guardarcliente');
+                }                      
             break; 
   
         }

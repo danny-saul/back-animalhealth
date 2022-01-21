@@ -23,8 +23,8 @@ class Detalle_CompraController
                 $nuevo->compras_id=intval($compras_id);
                 $nuevo->producto_id=intval($det->producto_id);
                 $nuevo->cantidad=intval($det->cantidad);
-                $nuevo->precio_compra=intval($det->precio_compra);
-                $nuevo->total=intval($det->total);
+                $nuevo->precio_compra=doubleval($det->precio_compra);
+                $nuevo->total=doubleval($det->total);
                 $nuevo->save();
 
                 $stock = $nuevo->cantidad;

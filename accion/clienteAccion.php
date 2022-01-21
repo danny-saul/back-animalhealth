@@ -12,12 +12,19 @@ class ClienteAccion
                 if ($ruta == '/cliente/listar' && $params) {
                     Route::get('/cliente/listar/:id', 'clienteController@getClienteId',$params);
                 }else
+                if ($ruta == '/cliente/listar2') {
+                    Route::get('/cliente/listar2/:id', 'clienteController@getClientexIdMas',$params);
+                }else
                 if ($ruta == '/cliente/datatable') {
                     Route::get('/cliente/datatable', 'clienteController@datatable');
                 }else //listar cliente sin parametro
                 if ($ruta == '/cliente/listar') {
                     Route::get('/cliente/listar', 'clienteController@listarCliente');
-                }                
+                }      
+                else   
+                if ($ruta == '/cliente/cantidad') {
+                    Route::get('/cliente/cantidad', 'clienteController@cantidad');
+                }           
             break;
 
             case 'post':

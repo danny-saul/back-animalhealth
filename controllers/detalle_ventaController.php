@@ -15,16 +15,16 @@ class Detalle_VentaController
         $this->cors = new Cors();
     }
 
-    public function guardar_detalleventa($venta_id, $detalle=[]){
+    public function guardar_detalleventa($ventas_id, $detalle=[]){
         $response =[];
         if(count($detalle) > 0){
             foreach ($detalle as $det){
                 $nuevo = new Detalle_Venta();
-                $nuevo->venta_id=intval($venta_id);
+                $nuevo->ventas_id=intval($ventas_id);
                 $nuevo->producto_id=intval($det->producto_id);
                 $nuevo->cantidad=intval($det->cantidad);
-                $nuevo->precio_venta=intval($det->precio_venta);
-                $nuevo->total=intval($det->total);
+                $nuevo->precio_venta=doubleval($det->precio_venta);
+                $nuevo->total=doubleval($det->total);
                 $nuevo->save();
 
                 $stock = $nuevo->cantidad;

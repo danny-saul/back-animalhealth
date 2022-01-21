@@ -210,4 +210,31 @@ class MascotaController
         }       
         echo json_encode($response);
     }
+
+    public function cargarMascotaCliente($params){
+        $this->cors->corsJson();
+        $cliente_id = intval($params['cliente_id']);
+        $response=[];
+        
+        $mascota = Mascota::where('cliente_id',$cliente_id)
+                            ->where('estado','A')->get();
+        if(count($mascota) >0){
+
+            $response=[
+                'status'=>true,
+                'mensaje'=>'si hay datos',
+                'mascota'=>$mascota,
+            ];
+        }else{
+            $response=[
+                'status'=>false,
+                'mensaje'=>'no hay datos',
+                'mascota'=>null,
+            ];
+        }
+
+
+        echo json_encode($response);
+
+    }
 }

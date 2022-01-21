@@ -14,7 +14,7 @@ class Horarios_AtencionAccion
                     Route::get('/horarios_atencion/listar', 'horarios_atencionController@Horarioatencion');
                 } else
                 if ($ruta == '/horarios_atencion/libre' && $params) {
-                    Route::get('/horarios_atencion/libre/:libre', 'horarios_atencionController@horarioAtencionlibre', $params);
+                    Route::get('/horarios_atencion/libre/:asignacion', 'horarios_atencionController@horarioAtencionlibre', $params);
                 }else
                 if ($ruta == '/horarios_atencion/doctor' && $params) {
                     Route::get('/horarios_atencion/doctor/:id', 'horarios_atencionController@doctorHorario', $params);

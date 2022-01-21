@@ -16,8 +16,8 @@ class RecetaAccion
 
         switch ($metodo_http) {
             case 'get':
-                /* if ($ruta == '/receta/listar' && $params) {
-                    Route::get('/receta/listar/cita_id','recetaController@recetasId',$params);
+                /* if ($ruta == '/receta/serviciomasAdquirido' && $params) {
+                    Route::get('/receta/serviciomasAdquirido/:inicio/:fin/:limite','recetaController@serviciomasAdquirido',$params);
                 }  */
                 break;
 

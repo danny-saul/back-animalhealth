@@ -4,8 +4,10 @@ require_once 'app/cors.php';
 require_once 'app/request.php';
 require_once 'models/personaModel.php';
 require_once 'models/doctor_HorarioModel.php';
+require_once 'models/horarios_atencionModel.php';
 
-class Doctor_HorarioController{
+class Doctor_HorarioController
+{
 
     private $cors;
 
@@ -14,87 +16,87 @@ class Doctor_HorarioController{
         $this->cors = new Cors();
     }
 
-    public function listarDoctorHorario($params){
+    public function listarDoctorHorario($params)
+    {
         $this->cors->corsJson();
-        $response = []; $aaff= []; 
+
         $doctor_id = intval($params['id_doctor']);
+        $dia = intval($params['dia']);
+
+        $hoA = [];
+        $nuevoArray = [];
+        $fecha = [];
+        $response = [];
+        $dh = Doctor_Horario::where('doctor_id', $doctor_id)->get();
+
+        foreach ($dh as $key) {
+            $id_doctor = intval($key->doctor->id);
+            $hoA[] = $key->horarios_atencion;
+        }
+
+        for ($i = 0; $i < count($hoA); $i++) {
+            $id_horario_atencion = $hoA[$i]->id;
+            $fechaFin = $hoA[$i]->fecha;
+            $fechasubdiaFin = intval(substr($fechaFin, 8));
+
+            $fechaInicio = $hoA[0]->fecha;
+            $fechasubdiaInicio = intval(substr($fechaInicio, 8));
+
+            $buscar = Horarios_Atencion::where('libre','S')->whereDay('fecha', $dia)->whereDay('fecha', '>=', $fechasubdiaInicio)->whereDay('fecha', '<=', $fechasubdiaFin)->get();
         
-        $doctor_horario = Doctor_Horario::where('doctor_id',$doctor_id)->get();
+        }
 
-        if(count($doctor_horario) > 0){
-            foreach($doctor_horario as $key){
-                $key->doctor;
-                $ha = $key->horarios_atencion;
-
-                $aux1 = [
-                    'id' => $ha->id,
-                    'fecha' => $ha->fecha,
-                    'horario' =>$ha->horario,
-                    'libre' => $ha->libre 
-                ];
-
-                $aux2 = [
-                    'fecha' =>$ha->fecha,
-                ];
-              
-                $aahh[] = (object)$aux1;
-                $aaff[] = (object)$aux2;
-
-            }
-            
-            for ($i=0; $i < count($aaff) ; $i++) { 
-                $fecha_padre[] =  $aaff[$i];                 
-            }
-            
-            $au = array_unique($fecha_padre,SORT_REGULAR);
-
-           $disponibles = Horarios_Atencion::where('libre','S')->where('estado','A')->get(); 
-
-        
+        if ((count($buscar) > 0) && ($id_doctor == 1)) {
             $response = [
                 'status' => true,
-                'mensaje' => 'existen datos',
-                'doctor_horario' => $doctor_horario,
-                'fecha' => $au,
-                'horario' => $aahh,
-                'disponibles' => $disponibles
+                'mensaje' => 'si hay dias disponibles',
+                'datos' => $buscar,
             ];
-            
-        }else{
+        } else if ((count($buscar) > 0) && ($id_doctor == 2)) {
+            $response = [
+                'status' => true,
+                'mensaje' => 'si hay dias disponibles para el doctor 2',
+                'datos' => $buscar,
+            ];
+        } else {
             $response = [
                 'status' => false,
-                'mensaje' => 'no existen datos',
-                'doctor_horario' => null
+                'mensaje' => 'no hay dias disponibles',
+                'datos' => null,
             ];
+
         }
+
         echo json_encode($response);
 
     }
 
-
-    public function guardardoctorhorario($doctor, $doctor_id, $horarios_atencion_id){
-        if($doctor){
+    public function guardardoctorhorario($doctor, $doctor_id, $horarios_atencion_id)
+    {
+        if ($doctor) {
             $nuevodoctorHorario = new Doctor_Horario();
-            $nuevodoctorHorario->doctor_id= $doctor_id;
-            $nuevodoctorHorario->horarios_atencion_id= $horarios_atencion_id;
-            $nuevodoctorHorario->estado= 'A';
+            $nuevodoctorHorario->doctor_id = $doctor_id;
+            $nuevodoctorHorario->horarios_atencion_id = $horarios_atencion_id;
+            $nuevodoctorHorario->estado = 'A';
             $nuevodoctorHorario->save();
 
             return $nuevodoctorHorario;
 
-        }else{
+        } else {
             return null;
         }
 
     }
 
-    public function verhorariod() {     
+    public function verhorariod()
+    {
         $this->cors->corsJson();
         $dataverhorario = Doctor_Horario::where('estado', 'A')->get();
-        $data = [];   $i = 1;
+        $data = [];
+        $i = 1;
 
         foreach ($dataverhorario as $dc) {
-    
+
             $icono = $dc->estado == 'I' ? '<i class="fa fa-check-circle fa-lg"></i>' : '<i class="fa fa-trash fa-lg"></i>';
             $clase = $dc->estado == 'I' ? 'btn-success btn-sm' : 'btn-dark btn-sm';
             $other = $dc->estado == 'A' ? 0 : 1;
@@ -130,8 +132,31 @@ class Doctor_HorarioController{
 
     }
 
-    
+    public function buscarDoctor()
+    {
+        $this->cors->corsJson();
+        $doctorHorario = Doctor_Horario::where('estado', 'A')->get();
+        $response = [];
 
+        if ($doctorHorario) {
+            $response = [
+                'status' => true,
+                'mensaje' => 'hay datos',
+                'doctorHorario' => $doctorHorario,
 
+            ];
+        } else {
+            $response = [
+                'status' => false,
+                'mensaje' => 'no hay datos',
+                'doctorHorario' => null,
+
+            ];
+
+        }
+
+        echo json_encode($response);
+
+    }
 
 }

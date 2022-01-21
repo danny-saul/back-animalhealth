@@ -57,6 +57,35 @@ class ClienteController
         echo json_encode($response);
     }
 
+    public function getClientexIdMas($params)
+    {
+        $this->cors->corsJson();
+        $id = intval($params['id']);
+        $response = [];
+
+        $datacliente2 = Cliente::find($id);
+
+        if($datacliente2){
+    
+                $datacliente2->persona;
+                $dh = $datacliente2->mascota;
+             
+          
+            $response = [
+                'status' => true,
+                'mensaje' => 'Si hay datos',
+                'cliente' => $datacliente2
+            ];
+        }else{
+            $response = [
+                'status' => false,
+                'mensaje' => 'no hay datos',
+                'cliente' => null
+            ];
+        }
+        echo json_encode($response);
+    }
+
     public function guardar(Request $request){
         $this->cors->corsJson();
         $response = [];
@@ -244,6 +273,29 @@ class ClienteController
 
     } 
     
+    public function cantidad(){
+        $this->cors->corsJson();
+        $datacliente= Cliente::where('estado','A')->get();
+        $response = [];
+
+        if($datacliente){
+            $response =[
+                'status'=>true,
+                'mensaje'=>'existe datos',
+                'modelo'=>'Clientes',
+                'cantidad'=>$datacliente->count(),
+            ];
+        }else{
+           $response =[
+               'status'=>false,
+               'mensaje'=>'no existe datos',
+               'modelo'=>'Cliente',
+               'cantidad'=>0,
+           ];
+
+        }
+        echo json_encode($response);
+    }
  
 
     
