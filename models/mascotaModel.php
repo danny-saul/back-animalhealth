@@ -7,6 +7,7 @@ require_once 'models/genero_mascotaModel.php';
 require_once 'models/tipo_mascotaModel.php';
 require_once 'models/clienteModel.php';
 require_once 'models/citasModel.php';
+require_once 'models/historial_clinicoModel.php';
 
 
 use Illuminate\Database\Eloquent\Model;
@@ -38,6 +39,9 @@ class Mascota extends Model{
     public function citas(){
         return $this->HasMany(Citas::class);
     }
+    public function historial_clinico(){ 
+        return $this->hasMany(Historial_Clinico::class);
+    }  
 
    
 

@@ -12,6 +12,9 @@ class VentasAccion
                 if ($ruta == '/ventas/listar' && $params) {
                     Route::get('/ventas/listar/:id', 'ventasController@getventasid',$params);
                 }else
+                if ($ruta == '/ventas/ventasmensuales' && $params) {
+                    Route::get('/ventas/ventasmensuales/:fecha_inicio/:fecha_fin', 'ventasController@rventasmensuales',$params);
+                }else
                 if ($ruta == '/ventas/datatable') {
                     Route::get('/ventas/datatable', 'ventasController@datatable');
                 }else //listar cliente sin parametro
@@ -21,7 +24,10 @@ class VentasAccion
                 else  
                 if ($ruta == '/ventas/totales') {
                     Route::get('/ventas/totales', 'ventasController@ventastotales');
-                }  
+                }else  
+                if ($ruta == '/ventas/masvendido' && $params) {
+                    Route::get('/ventas/masvendido/:inicio/:fin/:limite', 'ventasController@masvendido', $params);
+                }    
                           
 
             break;

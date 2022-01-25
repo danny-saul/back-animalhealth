@@ -25,6 +25,10 @@ class ComprasAccion
                 if ($ruta == '/compras/totales') {
                     Route::get('/compras/totales', 'comprasController@comprastotales');
                 } 
+                else  
+                if ($ruta == '/compras/mascomprada' && $params) {
+                    Route::get('/compras/mascomprada/:inicio/:fin/:limite', 'comprasController@mascomprada', $params);
+                }   
                  
             break;
 

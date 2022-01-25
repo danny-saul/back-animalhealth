@@ -270,4 +270,132 @@ class ComprasController
         echo json_encode($response);
 
     }
+
+
+
+    public function mascomprada($params){
+        $this->cors->corsJson();
+        $inicio = $params['inicio']; 
+        $fin = $params['fin']; 
+        $limite = intval($params['limite']);
+        
+        $compras = Compras::where('fecha_compra', '>=',$inicio)->where('fecha_compra','<=',$fin)->where('estado','A')->take($limite)->get();
+        $productos_id = []; $productos2=[];
+        foreach($compras as $c){
+            $dc=$c->detalle_compra;
+            foreach($dc as $item ){
+                $aux= [
+                    'id'=>$item->producto_id,
+                    'cantidad'=>$item->cantidad, 
+                ];
+                $productos_id[]=(object) $aux;
+                $productos2[]= $item->producto_id;
+
+            }
+        }
+        $norepetidos = array_values(array_unique($productos2));
+        $nuevoarray = []; $contador =0;
+        for ($i=0; $i < count($norepetidos); $i++) { 
+            foreach($productos_id as $pi){
+                if($pi->id === $norepetidos[$i]){
+                    $contador += $pi->cantidad;
+                }
+            }
+
+            $aux =[
+                'productos_id'=>$norepetidos[$i],
+                'cantidad'=>$contador,
+
+            ];
+            $contador = 0;
+            $nuevoarray[]=(object) $aux;
+            $aux=[];
+
+        }
+        $arrayproducto = $this->ordenarArray($nuevoarray);
+        $arrayproducto = Helper::invertir_array($arrayproducto);
+
+        $arraysemifinal = [];
+        if(count($arrayproducto) < $limite){
+            $arraysemifinal = $arrayproducto;    
+        }else if(count($arrayproducto) == $limite){
+            $arraysemifinal = $arrayproducto;
+        }else if(count($arrayproducto) > $limite){
+            for ($i=0; $i < $limite; $i++) { 
+                $arraysemifinal[] = $arrayproducto[$i];
+            }
+        }
+
+        $arrayfinal= [];
+        $total_gobal = 0; $totalporcentaje=0;
+        
+        foreach($arraysemifinal as $af){
+            $producto = Producto::find($af->productos_id);
+
+            $precioC = $producto->precio_compra;
+            $afCantidad = $af->cantidad;
+
+            $total = ($precioC * $afCantidad);
+            $tg= $total_gobal += $total;
+           
+         //   $tgl = round($tg,2);
+            $totalporcentaje += $af->cantidad;
+
+            $aux=[
+                'producto'=>$producto,
+                'cantidad'=>$af->cantidad,
+                'total'=>$total,
+
+            ];
+            $arrayfinal[]= (object) $aux;
+            
+        }
+
+        //armar grafico cantidad de  producto mas vendidos
+        $mascomprada = [];
+        $labels =[];
+        $porcentaje = [];
+
+        foreach($arrayfinal as $item){
+            $labels[]= $item->producto->nombre;
+            $mascomprada[]= $item->cantidad;
+            $porce = round((100 * $item->cantidad) / $totalporcentaje,2);
+            $porcentaje[]=$porce;
+
+        }
+        $response = [
+            'lista'=>$arrayfinal,
+            'data'=>[
+                'mascomprada' => $mascomprada,
+                'labels'=> $labels,
+
+            ],
+            'porcentaje'=>[
+                'porcen'=>$porcentaje,
+                'labels'=>$labels,
+            ],
+            'totalgeneral'=> $tg,
+        ];
+        
+        echo json_encode($response); die();
+
+    
+    }
+
+    function ordenarArray($array){
+        for ($i=1; $i < count($array); $i++) { 
+            for ($j=0; $j < count($array) - $i; $j++) { 
+                if($array[$j]->cantidad > $array[$j + 1]->cantidad){
+                    $chelas = $array[$j + 1];
+                    $array[$j + 1] = $array[$j];
+                    $array[$j] = $chelas;
+                }
+            }
+            
+        }
+        return $array;
+    } 
+
+
+
 }

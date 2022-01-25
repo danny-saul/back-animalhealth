@@ -2,10 +2,13 @@
 
 require_once 'app/cors.php';
 require_once 'app/request.php';
+require_once 'app/helper.php';
 require_once 'models/citasModel.php';
 require_once 'models/horarios_atencionModel.php';
 require_once 'models/doctorModel.php';
 require_once 'models/recetaModel.php';
+require_once 'models/mascotaModel.php';
+require_once 'models/tipo_mascotaModel.php';
 
 class CitasController
 {
@@ -209,7 +212,9 @@ class CitasController
         $mensajes = '';
 
         $cita = Citas::find($id_cita);
-        $response = [];  $receta_id = '';  $cita_id= '';
+        $response = [];
+        $receta_id = '';
+        $cita_id = '';
 
         if ($cita) {
             $rec = $cita->receta;
@@ -219,7 +224,6 @@ class CitasController
             foreach ($rec as $item) { //receta
                 $receta_id = $item->id;
             }
-     
 
             $receta = Receta::find($receta_id);
             $receta->cita_id = $cita_id;
@@ -230,7 +234,7 @@ class CitasController
             $cita->save();
 
             $horarioC = Horarios_Atencion::find($hc_id);
-            $horarioC->libre = 'S';
+            // $horarioC->libre = 'S';
             $horarioC->estado = 'I';
             $horarioC->save();
 
@@ -303,151 +307,383 @@ class CitasController
         $cliente_id = intval($params['cliente_id']);
         $cita = Citas::where('cliente_id', $cliente_id)->get();
 
-        $data = [];  $i = 1;
-            foreach ($cita as $citasc) {
-                $cli = $citasc->cliente->persona;
-                $masc = $citasc->mascota->nombre;
-                $doc = $citasc->doctor->persona;
-                $serv = $citasc->servicios->nombre_servicio;
-                $hor = $citasc->horarios_atencion->horario;
-                $dataEstadoCita = $citasc->estado_cita;
+        $data = [];
+        $i = 1;
+        foreach ($cita as $citasc) {
+            $cli = $citasc->cliente->persona;
+            $masc = $citasc->mascota->nombre;
+            $doc = $citasc->doctor->persona;
+            $serv = $citasc->servicios->nombre_servicio;
+            $hor = $citasc->horarios_atencion->horario;
+            $dataEstadoCita = $citasc->estado_cita;
 
-                $estado = $citasc->estado_cita_id;
-                //  $horario =$dc->horarios_atencion_id;
+            $estado = $citasc->estado_cita_id;
+            //  $horario =$dc->horarios_atencion_id;
 
-                if ($estado == 1) {
-                    $estado = '<span class="badge bg-warning" style="font-size: 1rem;">' . $dataEstadoCita->detalle . '</span>';
-                } else if ($estado == 2) {
-                    $estado = '<span class="badge bg-success" style="font-size: 1rem;">' . $dataEstadoCita->detalle . '</span>';
-                } else {
-                    $estado = '<span class="badge bg-danger" style="font-size: 1rem;">' . $dataEstadoCita->detalle . '</span>';
-                }
+            if ($estado == 1) {
+                $estado = '<span class="badge bg-warning" style="font-size: 1rem;">' . $dataEstadoCita->detalle . '</span>';
+            } else if ($estado == 2) {
+                $estado = '<span class="badge bg-success" style="font-size: 1rem;">' . $dataEstadoCita->detalle . '</span>';
+            } else {
+                $estado = '<span class="badge bg-danger" style="font-size: 1rem;">' . $dataEstadoCita->detalle . '</span>';
+            }
 
-                $botones = '<div class="text-center">
+            $botones = '<div class="text-center">
                             <button class="btn btn-sm btn-outline-danger" onclick="cancelar_cita(' . $citasc->id . ')">
                             <i class="fas fa-times"></i>
                             </button>
                         </div>';
 
-                $data[] = [
-                    0 => $i,
-                    1 => $cli->nombre . ' ' . $cli->apellido,
-                    2 => $masc,
-                    3 => $doc->nombre . ' ' . $doc->apellido,
-                    4 => $serv,
-                    5 => $hor,
-                    6 => $estado,
-                    7 => $botones,
-                ];
-                $i++;
-
-            }
-
-            $result = [
-                'sEcho' => 1,
-                'iTotalRecords' => count($data),
-                'iTotalDisplayRecords' => count($data),
-                'aaData' => $data,
+            $data[] = [
+                0 => $i,
+                1 => $cli->nombre . ' ' . $cli->apellido,
+                2 => $masc,
+                3 => $doc->nombre . ' ' . $doc->apellido,
+                4 => $serv,
+                5 => $hor,
+                6 => $estado,
+                7 => $botones,
             ];
-            echo json_encode($result);
+            $i++;
+
+        }
+
+        $result = [
+            'sEcho' => 1,
+            'iTotalRecords' => count($data),
+            'iTotalDisplayRecords' => count($data),
+            'aaData' => $data,
+        ];
+        echo json_encode($result);
     }
 
-    public function serviciomasAdquirido($params){
+    public function serviciomasAdquirido($params)
+    {
         $this->cors->corsJson();
         $inicio = $params['inicio'];
         $fin = $params['fin'];
         $limite = intval($params['limite']);
 
-        $atendidas = 2;  $response = [];
+        $atendidas = 2;
+        $response = [];
 
-        $cita = Citas::where('fecha','>=',$inicio)
-                        ->where('fecha','<=',$fin)
-                        ->where('estado','A')
-                        ->where('estado_cita_id',$atendidas)
-                        ->take($limite)->get();
+        $cita = Citas::where('fecha', '>=', $inicio)
+            ->where('fecha', '<=', $fin)
+            ->where('estado', 'A')
+            ->where('estado_cita_id', $atendidas)
+            ->take($limite)->get();
 
-        $servicios_id = [];  $servicio2 = [];  $valorConsulta = 5; $total = [];
+        $servicios_id = [];
+        $servicio2 = [];
+        $valorConsulta = 5;
+        $total = [];
 
-        foreach($cita as $c){
-           $servicio =  $c->servicios;
-           $aux = [
-               'id' => $servicio->id,
-               'nombre' => $servicio->nombre_servicio,
-               'precio' => $servicio->precio + $valorConsulta,
-           ];
+        foreach ($cita as $c) {
+            $servicio = $c->servicios;
 
-           $servicios_id[] = (object)$aux;
-           $servicio2[] =  $servicio->id;
-           $total[] =  $servicio->precio + $valorConsulta;
+            $aux = [
+                'id' => $servicio->id,
+                'nombre' => $servicio->nombre_servicio,
+                'precio' => $servicio->precio + $valorConsulta,
+                'cantidad' => 1,
+            ];
+
+            $servicios_id[] = (object) $aux;
+            $servicio2[] = $servicio->id;
+            $total[] = $servicio->precio + $valorConsulta;
         }
-
-        //echo json_encode(count($servicios_id)); die();
 
         $totalGene = 0;
         //sumar los totales
-        for ($i=0; $i < count($total); $i++) {
-            $totalGene +=$total[$i];
+        for ($i = 0; $i < count($total); $i++) {
+            $totalGene += $total[$i];
         }
 
-
         $noRepetidos = array_values(array_unique($servicio2));
-
-        $newArray = [];  $contador = 0; $nombreS = ""; $cont = 0;
+        $newArray = [];
+        $contador = 0;
+        $nombreS = "";
 
         //algoritmo para contar y eliminar los elementos repetidos de un array
-        for ($i=0; $i < count($noRepetidos); $i++) {
-            foreach($servicios_id as $item){
-                if($item->id ===  $noRepetidos[$i]){
+        for ($i = 0; $i < count($noRepetidos); $i++) {
+            $temp = [];
+            foreach ($servicios_id as $item) {
+
+                if ($item->id === $noRepetidos[$i]) {
                     $contador += $item->precio;
                     $nombreS = $item->nombre;
+                    $temp[] = $item;
+
                 }
             }
+            $canti = $temp[0];
+            $canti->cantidad = 0.5;
+            foreach ($temp as $t) {
+                $canti->cantidad = $canti->cantidad + $t->cantidad;
+            }
+            $result = $canti->cantidad;
+
             $aux = [
                 'servicio_id' => $noRepetidos[$i],
                 'precio' => $contador,
-                'nombre_servicio' => $nombreS
+                'nombre_servicio' => $nombreS,
+                'cantidad' => $result,
             ];
-            
-            $contador = 0;
-            $newArray[] = (array)$aux;
-            $aux = []; 
-        }
 
-        //echo json_encode($cont); die();
+            $contador = 0;
+            $newArray[] = (array) $aux;
+            $aux = [];
+        }
 
         $arraySecond = [];
 
         //recortar segun su limite
-        if(count($newArray) < $limite){
+        if (count($newArray) < $limite) {
             $arraySecond = $newArray;
-        }else if(count($newArray) == $limite){
-            $arraySecond = $newArray; 
-        }else if(count($newArray) > $limite){
-            for ($i=0; $i < $limite ; $i++) { 
+        } else if (count($newArray) == $limite) {
+            $arraySecond = $newArray;
+        } else if (count($newArray) > $limite) {
+            for ($i = 0; $i < $limite; $i++) {
                 $arraySecond[] = $newArray[$i];
             }
         }
 
-        
         $response = [
             'lista' => $arraySecond,
-            'total_general' => $totalGene
-  
+            'total_general' => $totalGene,
         ];
 
-        //hacergrafico estadistico
-        
-          
         echo json_encode($response);
-    
+    }
 
+    public function agendamientospormedicos($params)
+    {
+        $this->cors->corsJson();
+
+        $inicio = $params['inicio'];
+        $fin = $params['fin'];
+        $doctor_id = intval($params['doctor_id']);
+
+        $estado_cita_atendidas = 2;
+
+        $citas = Citas::where('estado_cita_id', $estado_cita_atendidas)
+            ->where('doctor_id', $doctor_id)
+            ->where('fecha', '>=', $inicio)
+            ->where('fecha', '<=', $fin)->orderBy('fecha')->get();
+
+        $nuevoArray = [];
+        if (count($citas) > 0) {
+            foreach ($citas as $item) {
+                if ($item->doctor->id == $doctor_id) {
+                    $nombresDoctor = $item->doctor->persona->nombre . ' ' . $item->doctor->persona->apellido;
+                    $nombresCliente = $item->cliente->persona->nombre . ' ' . $item->cliente->persona->apellido;
+                    $nombresMascota = $item->mascota->nombre;
+                    $raza = $item->mascota->raza->raza;
+
+                    $aux = [
+                        'atendido' => $item->estado_cita->detalle,
+                        'doctor' => $nombresDoctor,
+                        'fecha' => $item->fecha,
+                        'servicio' => $item->servicios->nombre_servicio,
+                        'horario_atencion' => $item->horarios_atencion->horario,
+                        'cliente' => $nombresCliente,
+                        'nombreMascota' => $nombresMascota,
+                        'raza' => $raza,
+                    ];
+
+                    $nuevoArray[] = (object) $aux;
+                }
+            }
+
+            if (count($nuevoArray) > 0) {
+                $response = [
+                    'status' => true,
+                    'mensaje' => 'si hay lista',
+                    'data' => $nuevoArray,
+                ];
+            } else {
+                $response = [
+                    'status' => false,
+                    'mensaje' => 'no hay datos',
+                    'data' => [],
+                ];
+            }
+        } else {
+            $response = [
+                'status' => false,
+                'mensaje' => 'no hay datos para la consulta',
+                'data' => [],
+            ];
+
+        }
+        echo json_encode($response);
+    }
+
+    public function mascotasmasatendidas($params)
+    {
+        $this->cors->corsJson();   
+        $inicio = $params['inicio'];
+        $fin = $params['fin'];
+        $id_cliente = intval($params['cliente_id']);
+       
+        $atendidos = 2;  $response = [];  $mascota_id = []; $data = [];   $dataAux = [];      
+
+        $citas = Citas::where('estado_cita_id', $atendidos)
+                        ->where('cliente_id', $id_cliente)
+                        ->where('fecha', '>=', $inicio)
+                        ->where('fecha', '<=', $fin)->orderBy('fecha')->get();
+
+
+        for ($i=0; $i < count($citas); $i++) {
+            $data[] = $citas[$i];
+
+            foreach($data as $d){
+                $id_cita = $d->id;
+                $id_cliente = $d->cliente_id;
+                $nombreCliente = $d->cliente->persona->nombre.' '.$d->cliente->persona->apellido;
+                $id_mascota = $d->mascota_id;
+                $nombreMascota = $d->mascota->nombre;
+                $atendidas = $d->estado_cita->detalle;
+                $tipoMascota_id = $d->mascota->tipo_mascota_id;
+                $servicios_id = $d->servicios_id;
+                
+            }
+
+
+            $aux = [
+                'cita_id' => $id_cita,
+                'cliente_id' => $id_cliente,
+                'nombre_cliente' => $nombreCliente,
+                'mascota_id' => $id_mascota,
+                'nombre_mascota' => $nombreMascota,
+                'tipo_mascota_id' =>  $tipoMascota_id,
+                'atendidas' => $atendidas,
+                'servicios_id' => $servicios_id, 
+                'cantidad' => 1,
+
+
+            ];
+            $dataAux[] = (object)$aux;
+            $mascota_id[] = $id_mascota;
+ 
+             
+        }
+        /* echo json_encode($dataAux); 
+        echo json_encode($tipo_mascota_id); die(); */
+
+        $noRepetidos = array_values(array_unique($mascota_id));
+       
+
+        $nuevoArray= [];    $cont = 0;
+
+        //echo json_encode($nuevoArrayT); die();
+
+        //recorrer mascota_id y eliminar los repetidos
+        for ($k=0; $k < count($noRepetidos); $k++) { 
+            foreach($dataAux as $da){
+                if($da->mascota_id === $noRepetidos[$k]){
+                    $cont += $da->cantidad;
+                    $nombreCliente = $da->nombre_cliente;
+                    $servi = $da->servicios_id;
+
+                }
+            }
+
+           
+            $aux = [
+                'mascota_id' => $noRepetidos[$k],
+                'cantidad' =>$cont,
+                'nombre_cliente' => $nombreCliente,
+                'servicios_id' => $servi
+                
+            ];
+            $cont = 0;  
+            $nuevoArray[] = (object)$aux;
+            $aux =[];
+        }
+
+        //echo json_encode($arrayMascotaxTm); die();
+
+        $arrayMascotaxId = $this->ordenarArray($nuevoArray);
+        $arrayMascotaxId = Helper::invertir_array($arrayMascotaxId);
+
+        $arrayFinal = [];
+
+        $validaUnicoNombre = Citas::where('cliente_id',$id_cliente)->get()->first();
+        $nombreClienteUnico[] = $validaUnicoNombre->cliente->persona->nombre.' '.$validaUnicoNombre->cliente->persona->apellido;
+
+        //echo json_encode($nuevoArrayTipo); die();
+        $totalPorcentaje = 0;
+        
+        foreach ($arrayMascotaxId as $key) {
+            $mascota = Mascota::find($key->mascota_id);
+
+            $servicios = Servicios::find($key->servicios_id);
+            $todosServicios=$servicios->nombre_servicio;
+            
+
+            $nombreMascota = $mascota->nombre;
+            $cantidad = $key->cantidad;
+            $tipomascota = $mascota->tipo_mascota->nombre_tipo;
+            $totalPorcentaje  += $key->cantidad;
+           
+           
+            $aux = [
+                'nombreMascota' => $nombreMascota,
+                'cantidadDeMascotaMasAtendida' =>$cantidad,
+                'tipomascota' =>$tipomascota,
+                'servicios' => $todosServicios                   
+            ];
+
+            $arrayFinal[] = (object)$aux;
+        }
+
+
+        //armar el grafico para la mascot mas atendida
+
+        $masAtendidas = []; $labels = [];   $porcentaje = []; 
+
+        foreach($arrayFinal as $item){
+            $labels[] = $item->nombreMascota;
+            $masAtendidas[] = $item->cantidadDeMascotaMasAtendida;
+            $por = round((100 * $item->cantidadDeMascotaMasAtendida) / $totalPorcentaje,2);
+            $porcentaje[] = $por;
+        
+        }
+
+
+
+
+        $response = [
+            'lista' => [
+                'data' => $arrayFinal,
+                'unicoNombre' => $nombreClienteUnico,   
+            ],
+            'grafico' => [
+                'datos' => $masAtendidas,
+                'labels' => $labels       
+            ],
+            'porcentajes' => [
+                'datos' => $porcentaje,
+                'labels' => $labels
+            
+            ]
+           
+        ];
+        
+        
+        
+        echo json_encode($response); die(); 
+
+
+       
 
     }
 
-    /* function ordenarArray($array){
-        for ($i=0; $i < count($array) ; $i++) { 
+    function ordenarArray($array){
+        for ($i=1; $i < count($array); $i++) { 
             for ($j=0; $j < count($array) - $i; $j++) { 
-                if($array[$j]->precio > $array[$j + 1]->precio){
+                if($array[$j]->cantidad > $array[$j + 1]->cantidad){
                     $chelas = $array[$j + 1];
                     $array[$j + 1] = $array[$j];
                     $array[$j] = $chelas;
@@ -456,5 +692,8 @@ class CitasController
             
         }
         return $array;
-    } */
+    } 
+
+    
+
 }

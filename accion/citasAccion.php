@@ -30,8 +30,17 @@ class CitasAccion
                 }else
                 if ($ruta == '/citas/serviciomasAdquirido' && $params) {
                     Route::get('/citas/serviciomasAdquirido/:inicio/:fin/:limite','citasController@serviciomasAdquirido',$params);
-                }                 
+                }            
+                else
+                if ($ruta == '/citas/citasagendamientospordoctor' && $params) {
+                    Route::get('/citas/citasagendamientospordoctor/:inicio/:fin/:doctor_id','citasController@agendamientospormedicos',$params);
+                }      
+                else
+                if ($ruta == '/citas/mascotasmasantendidas' && $params) {
+                    Route::get('/citas/mascotasmasantendidas/:inicio/:fin/:cliente_id','citasController@mascotasmasatendidas',$params);
+                }  
             break;
+            
             
             case 'post':
                 if($ruta == '/citas/guardar'){
