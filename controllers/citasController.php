@@ -364,8 +364,7 @@ class CitasController
         $fin = $params['fin'];
         $limite = intval($params['limite']);
 
-        $atendidas = 2;
-        $response = [];
+        $atendidas = 2;  $response = [];
 
         $cita = Citas::where('fecha', '>=', $inicio)
             ->where('fecha', '<=', $fin)
@@ -373,21 +372,16 @@ class CitasController
             ->where('estado_cita_id', $atendidas)
             ->take($limite)->get();
 
-        $servicios_id = [];
-        $servicio2 = [];
-        $valorConsulta = 5;
-        $total = [];
+        $servicios_id = [];  $servicio2 = [];  $valorConsulta = 5; $total = [];
 
         foreach ($cita as $c) {
             $servicio = $c->servicios;
-
             $aux = [
                 'id' => $servicio->id,
                 'nombre' => $servicio->nombre_servicio,
                 'precio' => $servicio->precio + $valorConsulta,
                 'cantidad' => 1,
             ];
-
             $servicios_id[] = (object) $aux;
             $servicio2[] = $servicio->id;
             $total[] = $servicio->precio + $valorConsulta;
@@ -400,20 +394,16 @@ class CitasController
         }
 
         $noRepetidos = array_values(array_unique($servicio2));
-        $newArray = [];
-        $contador = 0;
-        $nombreS = "";
+        $newArray = [];  $contador = 0;  $nombreS = "";
 
         //algoritmo para contar y eliminar los elementos repetidos de un array
         for ($i = 0; $i < count($noRepetidos); $i++) {
             $temp = [];
             foreach ($servicios_id as $item) {
-
                 if ($item->id === $noRepetidos[$i]) {
                     $contador += $item->precio;
                     $nombreS = $item->nombre;
                     $temp[] = $item;
-
                 }
             }
             $canti = $temp[0];
@@ -435,26 +425,45 @@ class CitasController
             $aux = [];
         }
 
+        
+        $arrayOrdenado = $this->ordenarArray2($newArray);
+        $arrayOrdenado = Helper::invertir_array($arrayOrdenado);
+
         $arraySecond = [];
 
         //recortar segun su limite
-        if (count($newArray) < $limite) {
-            $arraySecond = $newArray;
-        } else if (count($newArray) == $limite) {
-            $arraySecond = $newArray;
-        } else if (count($newArray) > $limite) {
+        if (count($arrayOrdenado) < $limite) {
+            $arraySecond = $arrayOrdenado;
+        } else if (count($arrayOrdenado) == $limite) {
+            $arraySecond = $arrayOrdenado;
+        } else if (count($arrayOrdenado) > $limite) {
             for ($i = 0; $i < $limite; $i++) {
-                $arraySecond[] = $newArray[$i];
+                $arraySecond[] = $arrayOrdenado[$i];
+            }
+        }
+        //ordenarlo por la cantidad mayor
+        foreach ($arraySecond as $arr) {
+            foreach ($arrayOrdenado as $orde) {
+                if ($arr["cantidad"] == $orde["cantidad"]) {
+                    $servers[] = $arr;
+                }
             }
         }
 
+        usort($servers, function($a, $b) {
+            return $a["cantidad"] < $b["cantidad"] ? 1 : -1;
+        });
+
+        //echo json_encode($servers); die();
+
         $response = [
-            'lista' => $arraySecond,
+            'lista' => $servers,
             'total_general' => $totalGene,
         ];
 
-        echo json_encode($response);
+        echo json_encode($response); 
     }
+
 
     public function agendamientospormedicos($params)
     {
@@ -693,6 +702,21 @@ class CitasController
         }
         return $array;
     } 
+
+    function ordenarArray2($array){
+        for ($i=1; $i < count($array); $i++) { 
+            for ($j=0; $j < count($array) - $i; $j++) { 
+                if($array[$j] > $array[$j + 1]){
+                    $chelas = $array[$j + 1];
+                    $array[$j + 1] = $array[$j];
+                    $array[$j] = $chelas;
+                }
+            }
+            
+        }
+        return $array;
+    }
+
 
     
 
