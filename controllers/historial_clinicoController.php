@@ -156,4 +156,8 @@ class Historial_ClinicoController{
         echo json_encode($response);
     }
 
+    public function datatablehistorial_clinico(){
+        
+    }
+
 }

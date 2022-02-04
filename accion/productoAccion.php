@@ -17,6 +17,9 @@ class ProductoAccion
                 }else
                 if ($ruta == '/producto/datatableproducto') {
                     Route::get('/producto/datatableproducto', 'productoController@datatableproducto');
+                } else
+                if ($ruta == '/producto/grafica_stock') {
+                    Route::get('/producto/grafica_stock', 'productoController@graficaStock');
                 }         
             break;
 

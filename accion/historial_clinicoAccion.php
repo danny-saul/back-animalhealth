@@ -21,7 +21,10 @@ class Historial_ClinicoAccion
                 } else 
                 if ($ruta == '/historial_clinico/aumentar') {
                     Route::post('/historial_clinico/aumentar', 'historial_clinicoController@aumentarCodigo');
-                }
+                }else
+                if ($ruta == '/historial_clinico/datatablehistorial_clinico') {
+                    Route::get('/historial_clinico/datatablehistorial_clinico', 'historial_clinicoController@datatablehistorial_clinico');
+                }  
                          
             break;
 

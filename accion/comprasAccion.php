@@ -28,7 +28,14 @@ class ComprasAccion
                 else  
                 if ($ruta == '/compras/mascomprada' && $params) {
                     Route::get('/compras/mascomprada/:inicio/:fin/:limite', 'comprasController@mascomprada', $params);
-                }   
+                }else
+                if($ruta == '/compras/grafica_compra'){
+                    Route::get('/compras/grafica_compra', 'comprasController@grafica_compra');
+                } else
+                if($ruta == '/compras/grafica_general'){
+                    Route::get('/compras/grafica_general', 'comprasController@grafica_general');
+                }      
+
                  
             break;
 

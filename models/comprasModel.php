@@ -5,7 +5,7 @@ require_once 'core/conexion.php';
 require_once 'models/proveedorModel.php';
 require_once 'models/usuarioModel.php';
 require_once 'models/detalle_compraModel.php';
-
+require_once 'models/transaccionModel.php';
 
 
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +27,9 @@ class Compras extends Model{
     public function detalle_compra(){
         return $this->hasMany(Detalle_Compra::class);
     }
+    public function transaccion(){
+        return $this->hasMany(Transaccion::class);
+    } 
     
 
 

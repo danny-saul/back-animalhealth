@@ -5,6 +5,7 @@ require_once 'core/conexion.php';
 require_once 'models/clienteModel.php';
 require_once 'models/usuarioModel.php';
 require_once 'models/detalle_ventaModel.php';
+require_once 'models/transaccionModel.php';
 
 
 
@@ -27,6 +28,9 @@ class Ventas extends Model{
     public function detalle_venta(){
         return $this->hasMany(Detalle_Venta::class);
     }
+    public function transaccion(){
+        return $this->hasMany(Transaccion::class);
+    } 
     
 
 

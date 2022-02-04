@@ -4,6 +4,7 @@ require_once 'vendor/autoload.php';
 require_once 'core/conexion.php';
 require_once 'models/categoriaModel.php';
 require_once 'models/detalle_compraModel.php';
+require_once 'models/inventarioModel.php';
 
 
 
@@ -27,6 +28,9 @@ class Producto extends Model{
     public function detalle_venta(){
         return $this->hasMany(Detalle_Venta::class);
     }
+    public function inventario(){
+        return $this->hasMany(Inventario::class);
+    } 
 
 
 }

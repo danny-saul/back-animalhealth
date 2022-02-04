@@ -5,7 +5,7 @@ require_once 'app/request.php';
 require_once 'app/error.php';
 require_once 'app/helper.php';
 require_once 'models/productoModel.php';
-
+require_once 'models/categoriaModel.php';
 class ProductoController
 {
 
@@ -271,6 +271,46 @@ class ProductoController
         }
         echo json_encode($response);
 
+    }
+
+    
+    public function graficaStock(){
+        $this->cors->corsJson();
+
+        $productos = Producto::where('estado', 'A')->get();
+        $categorias = Categoria::where('estado','A')->get();
+        $data = []; $response = [];
+
+        if($categorias->count() > 0){
+            foreach($categorias as $c){
+                $cats = []; $_cont = 0;
+
+                foreach($productos as $p){
+                    if($c->id == $p->categoria->id){
+                        $_cont += $p->stock;
+                    }
+               }
+        //       echo json_encode($c->categoria); die();
+               $cats = [
+                   'x' => $c->nombre,
+                   'valor' => $_cont
+               ];
+               array_push($data, $cats);
+            }
+
+            $response = [
+                'status' => true,
+                'mensaje' => 'Hay datos disponibles',
+                'data' => $data
+            ];
+        }else{
+            $response = [
+                'status' => false,
+                'mensaje' => 'No hay datos disponibles',
+                'data' => null
+            ];
+        }
+        echo json_encode($response);
     }
 
 }

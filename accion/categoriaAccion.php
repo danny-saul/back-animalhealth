@@ -14,6 +14,13 @@ class CategoriaAccion
                 }else
                 if ($ruta == '/categoria/listar') {
                     Route::get('/categoria/listar', 'categoriaController@listarcategoria');
+                }else
+                if($ruta == '/categoria/grafica_porcentaje'){
+                    Route::get('/categoria/grafica_porcentaje', 'categoriaController@grafica_porcentaje');
+                }
+                else
+                if ($ruta == '/categoria/buscarCategoriaProducto' && $params) {
+                    Route::get('/categoria/buscarCategoriaProducto/:id', 'categoriaController@buscarCategoriaProducto', $params);
                 }
                          
             break;

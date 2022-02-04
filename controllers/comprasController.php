@@ -6,6 +6,8 @@ require_once 'app/error.php';
 require_once 'app/helper.php';
 require_once 'models/comprasModel.php';
 require_once 'controllers/detalle_compraController.php';
+require_once 'controllers/inventarioController.php';
+require_once 'models/transaccionModel.php';
 
 class ComprasController
 {
@@ -79,6 +81,14 @@ class ComprasController
                     $detallecompracontroller = new Detalle_CompraController();
                     $det_compra = $detallecompracontroller->guardar_detallecompra($nuevacompra->id, $datarequestdetallecompra);
 
+                    //insertar en la tabla transaccion
+                    $nuevatransaccion = $this->nuevaTransaccion($nuevacompra);
+
+                    //INSERTAR EN LA TABLA INVENTARIO
+                    $inventariocontroller= new InventarioController();
+                    $responseInventario=$inventariocontroller->guardarIngresoProducto($nuevatransaccion->id, $datarequestdetallecompra, 'E');
+
+
                     $response = [
                         'status' => true,
                         'mensaje' => 'La compra se ha guardado',
@@ -102,6 +112,16 @@ class ComprasController
         }
 
         echo json_encode($response);
+    }
+
+    public function nuevaTransaccion($nuevacompra){
+        $nuevatransaccion = new Transaccion();
+        $nuevatransaccion->tipo_movimiento='E';
+        $nuevatransaccion->compras_id=$nuevacompra->id;
+        $nuevatransaccion->fecha=date('Y-m-d');
+        $nuevatransaccion->save();
+
+        return $nuevatransaccion;
     }
 
     public function datatable()
@@ -395,6 +415,67 @@ class ComprasController
         }
         return $array;
     } 
+
+
+
+    //new GRAFICA
+    public function grafica_compra(){
+        $this->cors->corsJson();
+        $year = date('Y');
+
+        $meses = [
+            'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+        ];
+        $data = [];
+
+         //Obtener total de compras y ventas mensual
+         for($i = 0; $i < count($meses); $i++){
+            $sqlCompras = "SELECT SUM(total) as suma FROM `compras` WHERE MONTH(fecha_compra) = ($i + 1) AND estado = 'A'";
+            
+            $comprasMes = $this->conexion->database::select($sqlCompras);
+ 
+            $compras = ($comprasMes[0]->suma) ? round($comprasMes[0]->suma, 2) : 0;
+           
+            $aux = [
+                'x' => $meses[$i],
+                'compras' => $compras
+            ];
+            array_push($data, $aux);
+        }
+        echo json_encode($data);
+
+    }
+
+    public function grafica_general(){
+        $this->cors->corsJson();
+        $year = date('Y');
+
+        $meses = [
+            'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+        ];
+        $data = [];
+        
+        //Obtener total de compras y ventas mensual
+        for($i = 0; $i < count($meses); $i++){
+            $sqlCompras = "SELECT SUM(total) as suma FROM `compras` WHERE MONTH(fecha_compra) = ($i + 1) AND estado = 'A'";
+            $sqlVentas = "SELECT SUM(total) as suma FROM `ventas` WHERE MONTH(fecha_venta) = ($i + 1) AND estado = 'A'";
+
+            $comprasMes = $this->conexion->database::select($sqlCompras);
+            $ventasMes = $this->conexion->database::select($sqlVentas);
+
+            $compras = ($comprasMes[0]->suma) ? round($comprasMes[0]->suma, 2) : 0;
+            $ventas  = ($ventasMes[0]->suma) ? round($ventasMes[0]->suma, 2) : 0;
+           
+            $aux = [
+                'x' => $meses[$i],
+                'compras' => $compras,
+                'ventas' => $ventas
+            ];
+            array_push($data, $aux);
+        }
+
+        echo json_encode($data); 
+    }
 
 
 

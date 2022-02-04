@@ -122,5 +122,75 @@ class CategoriaController{
 
     }
 
+    public function buscarCategoriaProducto($params){
+        $this->cors->corsJson();
+        $categoria_id = intval($params['id']);
+        $response = [];
+
+        $categoria = Categoria::find($categoria_id);
+        if($categoria){
+            $categoria->producto;
+
+            $response = [
+                'status' => true,
+                'mensaje' => 'Si ahi datos',
+                'categoria' => $categoria
+            ];
+        }else{
+            $response = [
+                'status' => false,
+                'mensaje' => 'No ahi datos',
+                'categoria' => null
+            ];
+        }
+        echo json_encode($response);
+    }
+
+    public function grafica_porcentaje(){
+
+        $this->cors->corsJson();
+        $categoria = Categoria::where('estado', 'A')->get();
+        
+        $labels = [];
+        $data = [];
+        $dataPorcentaje = [];
+
+        $response = []; 
+
+        foreach($categoria as $item){
+            $productos = $item->producto;
+            $labels[] = $item->nombre;
+            
+            $data[] = count($productos);
+
+        }
+        $suma = 0;
+        for($i=0; $i<count($data); $i++){
+            $suma += $data[$i];
+        }
+
+        for($i=0; $i<count($data); $i++){
+            $aux =  ((100 * $data[$i] ) / $suma);
+            $dataPorcentaje[] = round($aux,2);
+        }
+
+
+
+        $response = [
+            'status' => true,
+            'mensaje' =>'Existen datos',
+            'datos' => [
+                'labels' => $labels,
+                'data' => $data,
+                'porcentaje'=> $dataPorcentaje
+            ]
+        ];
+
+        echo json_encode($response);
+
+
+    }
+
+
    
 }

@@ -5,7 +5,7 @@ require_once 'core/conexion.php';
 require_once 'models/citasModel.php';
 require_once 'models/doctorModel.php'; 
 require_once 'models/detalle_recetaModel.php'; 
-
+require_once 'models/transaccionModel.php'; 
 
 
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +27,10 @@ class Receta extends Model{
     public function detallereceta(){
         return $this->hasMany(Detalle_Receta::class);
     }
+    public function transaccion(){
+        return $this->hasMany(Transaccion::class);
+    } 
+
 
 
 }

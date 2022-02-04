@@ -7,6 +7,8 @@ require_once 'app/helper.php';
 require_once 'models/ventasModel.php';
 require_once 'controllers/detalle_ventaController.php';
 require_once 'models/productoModel.php';
+require_once 'controllers/inventarioController.php';
+require_once 'models/transaccionModel.php';
 
 
 class VentasController
@@ -83,6 +85,15 @@ class VentasController
                     $detalleventacontroller = new Detalle_VentaController();
                     $det_venta = $detalleventacontroller->guardar_detalleventa($nuevaventa->id, $datarequestdetalleventa);
                     
+                    //insertar en la tabla transaccion
+                    $nuevatransaccion = $this->nuevaTransaccion($nuevaventa);
+
+                       //INSERTAR EN LA TABLA INVENTARIO
+                       $inventariocontroller= new InventarioController();
+                       $responseInventario=$inventariocontroller->guardarIngresoProducto($nuevatransaccion->id, $datarequestdetalleventa, 'S');
+   
+
+
                     $response=[
                         'status'=>true,
                         'mensaje'=>'La venta se ha guardado',
@@ -110,6 +121,16 @@ class VentasController
 
         echo json_encode($response);
 
+    }
+
+    public function nuevaTransaccion($nuevaventa){
+        $nuevatransaccion = new Transaccion();
+        $nuevatransaccion->tipo_movimiento='S';
+        $nuevatransaccion->ventas_id=$nuevaventa->id;
+        $nuevatransaccion->fecha=date('Y-m-d');
+        $nuevatransaccion->save();
+
+        return $nuevatransaccion;
     }
 
     public function getventasid($params){
