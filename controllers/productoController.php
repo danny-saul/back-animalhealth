@@ -313,4 +313,29 @@ class ProductoController
         echo json_encode($response);
     }
 
+    public function cantidad(){
+        $this->cors->corsJson();
+        $dataproducto= Producto::where('estado','A')->get();
+        $response = [];
+
+        if($dataproducto){
+            $response =[
+                'status'=>true,
+                'mensaje'=>'existe datos',
+                'modelo'=>'Productos',
+                'cantidad'=>$dataproducto->count(),
+            ];
+        }else{
+           $response =[
+               'status'=>false,
+               'mensaje'=>'no existe datos',
+               'modelo'=>'Productos',
+               'cantidad'=>0,
+           ];
+
+        }
+        echo json_encode($response);
+
+    }
+
 }

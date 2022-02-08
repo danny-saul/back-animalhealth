@@ -20,7 +20,10 @@ class MascotaAccion
                 }else
                 if ($ruta == '/mascota/listarmascota') {//listar todo
                     Route::get('/mascota/listarmascota', 'mascotaController@listarmascota');
-                }
+                } else   
+                if ($ruta == '/mascota/cantidad') {
+                    Route::get('/mascota/cantidad', 'mascotaController@cantidad');
+                }  
                          
             break;
 

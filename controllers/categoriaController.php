@@ -191,6 +191,30 @@ class CategoriaController{
 
     }
 
+    public function cantidad(){
+        $this->cors->corsJson();
+        $datacategoria= Categoria::where('estado','A')->get();
+        $response = [];
+
+        if($datacategoria){
+            $response =[
+                'status'=>true,
+                'mensaje'=>'existe datos',
+                'modelo'=>'Categoria',
+                'cantidad'=>$datacategoria->count(),
+            ];
+        }else{
+           $response =[
+               'status'=>false,
+               'mensaje'=>'no existe datos',
+               'modelo'=>'Categoria',
+               'cantidad'=>0,
+           ];
+
+        }
+        echo json_encode($response);
+    }
+
 
    
 }

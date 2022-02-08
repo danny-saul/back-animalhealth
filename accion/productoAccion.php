@@ -20,7 +20,10 @@ class ProductoAccion
                 } else
                 if ($ruta == '/producto/grafica_stock') {
                     Route::get('/producto/grafica_stock', 'productoController@graficaStock');
-                }         
+                }  else   
+                if ($ruta == '/producto/cantidad') {
+                    Route::get('/producto/cantidad', 'productoController@cantidad');
+                }           
             break;
 
             case 'post':

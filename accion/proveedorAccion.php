@@ -17,7 +17,11 @@ class ProveedorAccion
                 }else //listar cliente sin parametro
                 if ($ruta == '/proveedor/listar') {
                     Route::get('/proveedor/listar', 'proveedorController@listarproveedor');
-                }                
+                }
+                else   
+                if ($ruta == '/proveedor/cantidad') {
+                    Route::get('/proveedor/cantidad', 'proveedorController@cantidad');
+                }                   
             break;
 
             case 'post':

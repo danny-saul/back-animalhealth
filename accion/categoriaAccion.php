@@ -21,7 +21,10 @@ class CategoriaAccion
                 else
                 if ($ruta == '/categoria/buscarCategoriaProducto' && $params) {
                     Route::get('/categoria/buscarCategoriaProducto/:id', 'categoriaController@buscarCategoriaProducto', $params);
-                }
+                }   else   
+                if ($ruta == '/categoria/cantidad') {
+                    Route::get('/categoria/cantidad', 'categoriaController@cantidad');
+                }    
                          
             break;
 

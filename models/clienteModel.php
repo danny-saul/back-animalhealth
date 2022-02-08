@@ -7,7 +7,7 @@ require_once 'models/mascotaModel.php';
 require_once 'models/citasModel.php';
 require_once 'models/ventasModel.php';
 require_once 'models/historial_clinicoModel.php';
-
+require_once 'models/sastifaccionModel.php';
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -35,6 +35,9 @@ class Cliente extends Model{
     }
     public function historial_clinico(){ 
         return $this->hasMany(Historial_Clinico::class);
+    }
+    public function sastifaccion(){ 
+        return $this->hasMany(Sastifaccion::class);
     }
 
 

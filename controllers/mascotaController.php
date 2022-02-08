@@ -237,4 +237,28 @@ class MascotaController
         echo json_encode($response);
 
     }
+
+    public function cantidad(){
+        $this->cors->corsJson();
+        $datamascota= Mascota::where('estado','A')->get();
+        $response = [];
+
+        if($datamascota){
+            $response =[
+                'status'=>true,
+                'mensaje'=>'existe datos',
+                'modelo'=>'Mascota',
+                'cantidad'=>$datamascota->count(),
+            ];
+        }else{
+           $response =[
+               'status'=>false,
+               'mensaje'=>'no existe datos',
+               'modelo'=>'Mascota',
+               'cantidad'=>0,
+           ];
+
+        }
+        echo json_encode($response);
+    }
 }

@@ -226,6 +226,30 @@ class ProveedorController{
         echo json_encode($response);
 
 
-    }   
+    }  
+    
+    public function cantidad(){
+        $this->cors->corsJson();
+        $dataproveedor= Proveedor::where('estado','A')->get();
+        $response = [];
+
+        if($dataproveedor){
+            $response =[
+                'status'=>true,
+                'mensaje'=>'existe datos',
+                'modelo'=>'Proveedor',
+                'cantidad'=>$dataproveedor->count(),
+            ];
+        }else{
+           $response =[
+               'status'=>false,
+               'mensaje'=>'no existe datos',
+               'modelo'=>'Proveedor',
+               'cantidad'=>0,
+           ];
+
+        }
+        echo json_encode($response);
+    }
 
 }
