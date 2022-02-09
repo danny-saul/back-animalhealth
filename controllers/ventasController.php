@@ -4,6 +4,7 @@ require_once 'app/cors.php';
 require_once 'app/request.php';
 require_once 'app/error.php';
 require_once 'app/helper.php';
+require_once 'core/conexion.php';
 require_once 'models/ventasModel.php';
 require_once 'controllers/detalle_ventaController.php';
 require_once 'models/productoModel.php';
@@ -16,6 +17,7 @@ class VentasController
 
     private $cors;
     private $limite=5;
+    private $conexion;
 
     public function __construct()
     {
@@ -428,4 +430,21 @@ class VentasController
         }
         return $array;
     } 
+
+
+    public function kpiVenta($params){
+        $inicio = $params['inicio'];
+        $fin = $params['fin'];
+        //$temporalidad = intval($params['temporalidad']); //1 dia 2 mes 3 ano
+
+        $sql = "SELECT SUM(v.total) as total, YEAR(v.fecha_venta)as ano, MONTH(v.fecha_venta) AS mes, DAY(v.fecha_venta) AS dia FROM ventas v where fecha_venta BETWEEN $inicio and $fin and v.estado = 'A'";
+        $ventas = $this->conexion->database::select($sql)[0];
+
+        echo json_encode($ventas);
+        
+
+
+
+
+    }
 }
