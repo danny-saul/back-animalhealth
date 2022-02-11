@@ -29,7 +29,7 @@ class VentasAccion
                     Route::get('/ventas/masvendido/:inicio/:fin/:limite', 'ventasController@masvendido', $params);
                 }else  
                 if ($ruta == '/ventas/kpiVenta' && $params) {
-                    Route::get('/ventas/kpiVenta/:inicio/:fin', 'ventasController@kpiVenta', $params);
+                    Route::get('/ventas/kpiVenta/:inicio/:fin/:year/:presupuesto', 'ventasController@kpiVenta', $params); 
                 }     
                           
 

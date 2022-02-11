@@ -431,20 +431,108 @@ class VentasController
         return $array;
     } 
 
-
-    public function kpiVenta($params){
+    /* public function kpiVenta($params){
+        $this->cors->corsJson();
         $inicio = $params['inicio'];
         $fin = $params['fin'];
-        //$temporalidad = intval($params['temporalidad']); //1 dia 2 mes 3 ano
+        $temporalidad = intval($params['temporalidad']);
+        $meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
-        $sql = "SELECT SUM(v.total) as total, YEAR(v.fecha_venta)as ano, MONTH(v.fecha_venta) AS mes, DAY(v.fecha_venta) AS dia FROM ventas v where fecha_venta BETWEEN $inicio and $fin and v.estado = 'A'";
-        $ventas = $this->conexion->database::select($sql)[0];
-
-        echo json_encode($ventas);
         
+        $ventaPresupuestadaAno = 50.5;
+
+        if($temporalidad == 1){ //x dia
+
+            for ($i=0; $i < count($meses); $i++) {  
+                $sql = "SELECT id, (total) as total, fecha_venta FROM ventas  where fecha_venta BETWEEN '$inicio' and '$fin'";
+            }
+        }else 
+        if($temporalidad == 2){ // x mes
+            for ($i=0; $i < count($meses); $i++) { 
+                $sql = "SELECT id, SUM(total) as total, v.fecha_venta FROM ventas v  where fecha_venta BETWEEN '$inicio' and '$fin' GROUP BY EXTRACT(YEAR_MONTH FROM v.fecha_venta)";
+            } 
+
+        }else 
+        if($temporalidad == 3){ // x ano
+            for ($i=0; $i < count($meses); $i++) { 
+                $sql = "SELECT id, SUM(total) as total, v.fecha_venta FROM ventas v  where fecha_venta BETWEEN '$inicio' and '$fin' GROUP BY EXTRACT(YEAR FROM v.fecha_venta and MONTH(v.fecha_venta) = ($i + 1))";
+            }
+            $arrayVentasRealizadas = $this->conexion->database::select($sql);
+            $data3[] = ($arrayVentasRealizadas[0]->total) ? round(($arrayVentasRealizadas[0]->total),2) : 0;
+
+            foreach ($arrayVentasRealizadas as $key) {
+                $ventasRealizadasTotal[] = $key->total;
+                $fecha[] = $key->fecha_venta;  
+            }
 
 
+            $ejecucionPresupuestal =  round(($ventasRealizadasTotal[0] / $ventaPresupuestadaAno),2);
+        }
 
+        $response  = [
+            'ventas' =>[
+                'labels' => $meses,
+                'data' => $data3,
+                'ejecucion_presupuestal' => $ejecucionPresupuestal 
+            ]
+        ];
+
+        echo json_encode($response); die();
+        
+        //indicador                
+        //echo json_encode($ejecucionPresupuestal); die();
+
+    } */
+
+    public function kpiventa($params)
+    {
+        $this->cors->corsJson();
+        $inicio = $params['inicio'];
+        $fin = $params['fin'];
+        $year = intval($params['year']);
+        $ventaPresupuestadaAno = floatval($params['presupuesto']);  
+        $data = [];
+
+        $meses = [
+            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+        ];
+
+        //Obtener total de las ventas Para el grafico de barra
+        for ($i=0; $i < count($meses); $i++) { 
+            $sql = "SELECT SUM(total) as total, v.fecha_venta FROM ventas v  WHERE MONTH(fecha_venta) = ($i + 1) and YEAR(fecha_venta) = $year and  fecha_venta BETWEEN '$inicio' and '$fin'";
+            $arrayVentasRealizadas = $this->conexion->database::select($sql);
+            $data[] = ($arrayVentasRealizadas[0]->total) ? round(($arrayVentasRealizadas[0]->total),2) : 0;
+        }
+
+        //kpi ventas Presupuestal Anual
+        for ($i=0; $i < count($meses); $i++) { 
+            $sql = "SELECT id, SUM(total) as total, v.fecha_venta FROM ventas v  where fecha_venta BETWEEN '$inicio' and '$fin' GROUP BY EXTRACT(YEAR FROM v.fecha_venta and MONTH(v.fecha_venta) = ($i + 1))";
+        }
+        $arrayVentasRealizadas = $this->conexion->database::select($sql);
+        $data3[] = ($arrayVentasRealizadas[0]->total) ? round(($arrayVentasRealizadas[0]->total),2) : 0;
+
+        foreach ($arrayVentasRealizadas as $key) {
+            $ventasRealizadasTotal[] = $key->total;
+            $fecha[] = $key->fecha_venta;  
+        }
+        
+        
+        $ejecucionPresupuestal =  round(($ventasRealizadasTotal[0] / $ventaPresupuestadaAno),2);
+
+        $formula = (string) $ventasRealizadasTotal[0] .'/'. $ventaPresupuestadaAno;
+        
+        $response = [
+            'orden' => [
+                'labels' => $meses,
+                'data' => $data,
+                'anio' => $year,
+                'presupuesto'=> $ventaPresupuestadaAno,
+                'formula' => $formula,
+                'ejecucionPresupuestal' => $ejecucionPresupuestal
+            ],
+        ];
+        echo json_encode($response); die();   
+        
 
     }
 }

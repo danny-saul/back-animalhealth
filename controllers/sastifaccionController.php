@@ -21,12 +21,13 @@ class SastifaccionController{
     }
 
     public function guardarsastifaccion(Request $request){
+        //echo json_encode($request); die();
         $this->cors->corsJson();
         $sastifaccionRequest = $request->input('sastifaccion');
         $response = [];
         if($sastifaccionRequest){
-            $clienteid = intval($sastifaccionRequest->clienteid);
-            $detalleid = intval($sastifaccionRequest->detalleid);
+            $clienteid = intval($sastifaccionRequest->cliente_id);
+            $detalleid = intval($sastifaccionRequest->detalle_id);
             $valoracion = ucfirst($sastifaccionRequest->valoracion);
             
             $nuevaSastifaccion = new Sastifaccion();

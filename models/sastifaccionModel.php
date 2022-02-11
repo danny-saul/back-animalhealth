@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 class Sastifaccion extends Model{
 
     protected $table = "sastifaccion";
-    protected $filleable =['cliente_id', 'detalle_id', 'valoracion', 'fecha','estado'];
+    protected $filleable =['cliente_id','detalle_id','valoracion','fecha','estado'];
     public $timestamps = false;
 
     public function cliente(){ 

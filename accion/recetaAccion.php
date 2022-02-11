@@ -16,9 +16,12 @@ class RecetaAccion
 
         switch ($metodo_http) {
             case 'get':
-                /* if ($ruta == '/receta/serviciomasAdquirido' && $params) {
-                    Route::get('/receta/serviciomasAdquirido/:inicio/:fin/:limite','recetaController@serviciomasAdquirido',$params);
-                }  */
+                 if ($ruta == '/receta/listar' && $params) {
+                    Route::get('/receta/listar/:id','recetaController@getrecetasid',$params);
+                }else 
+                if ($ruta == '/receta/listar') {
+                    Route::get('/receta/listar', 'recetaController@listarrecetas');
+                }else
                 break;
 
             case 'post':
