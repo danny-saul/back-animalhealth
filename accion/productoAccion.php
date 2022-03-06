@@ -23,6 +23,10 @@ class ProductoAccion
                 }  else   
                 if ($ruta == '/producto/cantidad') {
                     Route::get('/producto/cantidad', 'productoController@cantidad');
+                }    
+                else   
+                if ($ruta == '/producto/search' && $params) {
+                    Route::get('/producto/search/:texto', 'productoController@buscarProducto',$params);
                 }           
             break;
 

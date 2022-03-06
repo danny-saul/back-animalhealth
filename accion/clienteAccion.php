@@ -24,7 +24,13 @@ class ClienteAccion
                 else   
                 if ($ruta == '/cliente/cantidad') {
                     Route::get('/cliente/cantidad', 'clienteController@cantidad');
-                }           
+                }  else 
+                if ($ruta == '/cliente/buscar' && $params) {
+                    Route::get('/cliente/buscar/:texto', 'clienteController@Buscarcliente',$params );
+                }    else
+                if ($ruta == '/cliente/search' && $params) {
+                    Route::get('/cliente/search/:texto', 'clienteController@searchCliente', $params);
+                }        
             break;
 
             case 'post':

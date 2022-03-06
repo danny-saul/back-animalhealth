@@ -8,6 +8,7 @@ require_once 'models/citasModel.php';
 require_once 'models/ventasModel.php';
 require_once 'models/historial_clinicoModel.php';
 require_once 'models/sastifaccionModel.php';
+require_once 'models/evaluar_servicioModel.php';
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -39,6 +40,10 @@ class Cliente extends Model{
     public function sastifaccion(){ 
         return $this->hasMany(Sastifaccion::class);
     }
+    public function evaluar_servicio(){ 
+        return $this->hasMany(Evaluar_Servicio::class);
+    }
+
 
 
     

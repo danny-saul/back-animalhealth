@@ -76,7 +76,7 @@ class CitasController
     public function datatablecita()
     {
         $this->cors->corsJson();
-        $dataCita = Citas::where('estado', 'A')->get();
+        $dataCita = Citas::where('estado', 'A')->orderBy('fecha','desc')->get();
         $data = [];
         $i = 1;
 
@@ -87,6 +87,7 @@ class CitasController
             $dataServicio = $dc->servicios;
             $dataHoraCita = $dc->horarios_atencion;
             $dataEstadoCita = $dc->estado_cita;
+            $dataFechaCita= $dc->fecha;
 
             //substr para quitar los ceros de la derecha
             // $horario = substr($dataHoraCita->horario, 0, -3);
@@ -116,7 +117,8 @@ class CitasController
                 3 => $dataDoctor->nombre . ' ' . $dataDoctor->apellido,
                 4 => $dataServicio->nombre_servicio,
                 5 => $dataHoraCita->horario,
-                6 => $estado,
+                6 => $dataFechaCita,
+                7 => $estado,
             ];
             $i++;
 

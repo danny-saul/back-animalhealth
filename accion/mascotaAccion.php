@@ -23,6 +23,9 @@ class MascotaAccion
                 } else   
                 if ($ruta == '/mascota/cantidad') {
                     Route::get('/mascota/cantidad', 'mascotaController@cantidad');
+                }  else 
+                if ($ruta == '/mascota/buscar' && $params) {
+                    Route::get('/mascota/buscar/:texto', 'mascotaController@Buscarmascota2',$params );
                 }  
                          
             break;

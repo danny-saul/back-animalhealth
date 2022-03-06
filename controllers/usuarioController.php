@@ -35,10 +35,10 @@ class UsuarioController
         $response = [];
         $datausuariorequest = $request->input('usuario');
         $datadoctorrequest = $request->input('doctor');
-        $datadoctorhorariorequest = $request->input('doctorhorario');
+        //$datadoctorhorariorequest = $request->input('doctorhorario');
         $dataclienterequest = $request->input('cliente');
 
-        $horarios_atencion_id = intval($datadoctorhorariorequest->horarios_atencion_id);
+        //$horarios_atencion_id = intval($datadoctorhorariorequest->horarios_atencion_id);
 
         if (!isset($datausuariorequest) || $datausuariorequest == null) {
             $response = [
@@ -88,19 +88,25 @@ class UsuarioController
                                 'usuario' => $responseDoctor,
                             ];
                         } else {
+                            $response = [
+                                'status' => true,
+                                'mensaje' => 'El doctor se ha registrado',
+                                'doctor' => $responseDoctor,
+                       //         'doctor_horario' => $responseDoctorHorario,
+                            ];
                             //recuperar el id del doctor
-                            $iddoctor = $responseDoctor->id;
+                          //  $iddoctor = $responseDoctor->id;
                             //guardar en la tabla doctor horario
-                            $responseDoctorHorario = $this->doctorHorarioController->guardardoctorhorario($datadoctorhorariorequest, $iddoctor, $horarios_atencion_id);
-                            if ($responseDoctorHorario) {
+                     //       $responseDoctorHorario = $this->doctorHorarioController->guardardoctorhorario($datadoctorhorariorequest, $iddoctor, $horarios_atencion_id);
+                     /*        if ($responseDoctorHorario) {
                                 $response = [
                                     'status' => true,
                                     'mensaje' => 'El doctor se ha registrado',
                                     'doctor' => $responseDoctor,
-                                    'doctor_horario' => $responseDoctorHorario,
+                           //         'doctor_horario' => $responseDoctorHorario,
                                 ];
 
-                            } 
+                            }  */
                         }
                     }else{
 

@@ -21,7 +21,11 @@ class ProveedorAccion
                 else   
                 if ($ruta == '/proveedor/cantidad') {
                     Route::get('/proveedor/cantidad', 'proveedorController@cantidad');
-                }                   
+                } 
+                else 
+                if ($ruta == '/proveedor/buscar' && $params) {
+                    Route::get('/proveedor/buscar/:texto', 'proveedorController@Buscarproveedor',$params );
+                }                    
             break;
 
             case 'post':

@@ -252,4 +252,34 @@ class ProveedorController{
         echo json_encode($response);
     }
 
+    public function Buscarproveedor($params){
+        $this->cors->corsJson();
+        $texto= strtolower($params['texto']);
+        $dataproveedor = Proveedor::where('razon_social','like','%'. $texto .'%' )->where('estado','A')->get();
+        $response=[];
+        if($texto == ""){
+            $response=[
+                'status'=>true,
+                'mensaje'=>'todos los registros',
+                'proveedor'=> $dataproveedor,
+            ];
+        }else{
+            if(count($dataproveedor)>0){
+                $response=[
+                    'status' => true,
+                    'mensaje'=>'coincidencias encontradas',
+                    'proveedor'=> $dataproveedor,
+                ];
+                
+            }else{
+                $response=[
+                    'status' => false,
+                    'mensaje'=>'no hay registros',
+                    'raza'=> null,
+                ];
+            }
+        }
+        echo json_encode($response);
+    }
+
 }

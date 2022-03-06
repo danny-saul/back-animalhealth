@@ -69,7 +69,7 @@ class ComprasController
                 $nuevacompra->proveedor_id = intval($datarequestcompra->proveedor_id);
                 $nuevacompra->usuario_id = intval($datarequestcompra->usuario_id);
                 $nuevacompra->numero_compra = $nuevonumerocompra;
-                $nuevacompra->descuento = floatval($datarequestcompra->descuento);
+                $nuevacompra->descuento = 0;
                 $nuevacompra->subtotal = floatval($datarequestcompra->subtotal);
                 $nuevacompra->iva = floatval($datarequestcompra->iva);
                 $nuevacompra->total = floatval($datarequestcompra->total);

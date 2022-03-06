@@ -31,6 +31,10 @@ class VentasAccion
                 if ($ruta == '/ventas/kpiVenta' && $params) {
                     Route::get('/ventas/kpiVenta/:inicio/:fin/:year/:presupuesto', 'ventasController@kpiVenta', $params); 
                 }     
+                else  
+                if ($ruta == '/ventas/regresion' && $params) {
+                    Route::get('/ventas/regresion/:anio', 'ventasController@regresionlineal', $params); 
+                }     
                           
 
             break;

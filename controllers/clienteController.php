@@ -2,6 +2,7 @@
 
 require_once 'app/cors.php';
 require_once 'app/request.php';
+require_once 'core/conexion.php';
 require_once 'models/personaModel.php';
 require_once 'models/clienteModel.php';
 require_once 'controllers/personaController.php';
@@ -11,11 +12,13 @@ class ClienteController
 
     private $cors;
     private $personaController;
+    private $conexion;
 
     public function __construct()
     {
         $this->cors = new Cors();
         $this->personaController = new PersonaController();
+        $this->conexion = new Conexion();
     }
     //tabla cliente
 /*     public function guardarCliente($cliente, $persona_id){
@@ -293,6 +296,33 @@ class ClienteController
                'cantidad'=>0,
            ];
 
+        }
+        echo json_encode($response);
+    }
+
+    public function searchCliente($params){
+        $this->cors->corsJson();
+        $texto = ucfirst($params['texto']);
+        $response = [];
+
+        $sql = "SELECT c.id, p.cedula, p.nombre, p.apellido, p.telefono, p.direccion FROM persona p
+        INNER JOIN cliente c ON c.persona_id = p.id
+        WHERE p.estado = 'A' and (p.cedula LIKE '$texto%' OR p.nombre LIKE '%$texto%' OR p.apellido LIKE '%$texto%')";
+
+        $array = $this->conexion->database::select($sql);
+
+        if ($array) {
+            $response = [
+                'status' => true,
+                'mensaje' => 'Existen datos',
+                'cliente' => $array,
+            ];
+        } else {
+            $response = [
+                'status' => false,
+                'mensaje' => 'No existen coincidencias',
+                'cliente' => null,
+            ];
         }
         echo json_encode($response);
     }

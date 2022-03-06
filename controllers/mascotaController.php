@@ -10,10 +10,12 @@ require_once 'models/mascotaModel.php';
 class MascotaController
 {
     private $cors;
+    private $conexion;
 
     public function __construct()
     {
         $this->cors = new cors;
+        $this->conexion = new Conexion();
     }
 
     public function guardar(Request $request)
@@ -261,4 +263,79 @@ class MascotaController
         }
         echo json_encode($response);
     }
+
+     
+   public function buscarMascota2($params){
+
+        $this->cors->corsJson();
+        $texto = ucfirst($params['texto']);
+        $response = [];
+
+        $sql = "SELECT mascota.id, mascota.cliente_id, cliente.persona_id, persona.cedula, 
+        persona.nombre AS nombre_persona, persona.apellido, persona.telefono, mascota.nombre,
+         mascota.edad, mascota.fecha_nacimiento, tipo_mascota.nombre_tipo, 
+         raza.raza, genero_mascota.genero
+        FROM mascota
+            INNER JOIN cliente ON mascota.cliente_id = cliente.id 
+            INNER JOIN persona ON cliente.persona_id = persona.id 
+            INNER JOIN tipo_mascota ON mascota.tipo_mascota_id = tipo_mascota.id 
+            INNER JOIN raza ON mascota.raza_id = raza.id 
+            INNER JOIN genero_mascota ON mascota.genero_mascota_id = genero_mascota.id
+            WHERE mascota.estado = 'A' and (persona.cedula LIKE '%$texto%' OR persona.nombre LIKE '%$texto%' 
+            OR persona.apellido LIKE '%$texto%' OR mascota.nombre LIKE '%$texto%')";
+      
+        $array = $this->conexion->database::select($sql);
+
+        if ($array) {
+            $response = [
+                'status' => true,
+                'mensaje' => 'Existen datos',
+                'mascota' => $array,
+            ];
+        } else {
+            $response = [
+                'status' => false,
+                'mensaje' => 'No existen coincidencias',
+                'mascota' => null,
+            ];
+        }
+        echo json_encode($response);
+
+
+
+    }  
+    
+    
+    /*
+
+    public function Buscarmascota2($params){
+        $this->cors->corsJson();
+        $texto= strtolower($params['texto']);
+        $datamascota = Mascota::where('nombre','like','%'. $texto .'%')->where('estado','A')->get();
+        $response=[];
+        if($texto == ""){
+            $response=[
+                'status'=>true,
+                'mensaje'=>'todos los registros',
+                'mascota'=> $datamascota,
+            ];
+        }else{
+            if(count($datamascota)>0){
+                $response=[
+                    'status' => true,
+                    'mensaje'=>'coincidencias encontradas',
+                    'mascota'=> $datamascota,
+                ];
+                
+            }else{
+                $response=[
+                    'status' => false,
+                    'mensaje'=>'no hay registros',
+                    'mascota'=> null,
+                ];
+            }
+        }
+        echo json_encode($response);
+    }
+    */
 }

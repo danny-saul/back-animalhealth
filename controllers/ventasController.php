@@ -182,7 +182,7 @@ class VentasController
 
     public function datatable()  {     
         $this->cors->corsJson();
-        $dataverventas = Ventas::where('estado', 'A')->orderBy('fecha_venta','desc')->get();
+        $dataverventas = Ventas::where('estado', 'A')->orderBy('fecha_venta','DESC')->get();
         $data = [];   $i = 1;
 
         foreach ($dataverventas as $dc) {
@@ -534,5 +534,134 @@ class VentasController
         echo json_encode($response); die();   
         
 
+    }
+
+
+
+    public function regresionlineal($params){
+        $this->cors->corsJson();
+        $anio = intval($params['anio']);
+        $response = [];
+        $tabla = [];  $burbuja = []; $fc_array = [];
+        $ventas = Ventas::whereYear('fecha_venta',$anio)->get(); //ventas anuales
+        
+        $fechainicio = $ventas[0]->fecha_venta; //obtener la fecha de inicio 
+        $fechafin = $ventas[count($ventas) - 1]->fecha_venta; //obtenemos fecha fin
+        
+        $fechaini = new DateTime($fechainicio); //parseamos la fecha inicio
+        $fechaf = new DateTime($fechafin); //parseamos la fecha fin
+
+        $diferencia = $fechaini->diff($fechaf); //diferencia , o resta de la fecha de venta 
+        $dia= $diferencia->days; // 
+
+        if(count($ventas) > 0){
+            for ($i=0; $i <= $dia; $i++) {  //recoremos los dias
+                $SumaDia = "+ " . ($i) . " days"; //armamos el string de los dias y luego contarlos
+                $fechaContador = date("Y-m-d", strtotime($fechainicio . $SumaDia)); //segun el contador suma los dias
+                $fc_array[]=$fechaContador;
+                $ventadias = Ventas::where('fecha_venta',$fechaContador)->get(); //obtenemos las ventas del dia -hoy
+            
+                if($ventadias && count($ventadias) > 0){
+                    $cantidad = 0; 
+                    $total = 0;
+                    foreach($ventadias as $vd){
+                        $cantidad++;
+                        $total+=$vd->total;
+                    }
+
+                    $total = round($total,2);
+                    $aux = [
+                        'fecha'=>$fechaContador, 
+                        'cantidad'=>$cantidad,
+                        'ventatotal'=>$total,
+                    ];
+                    $tabla[]= (object) $aux;
+                    $cantidad= 0;
+                    $total = 0;
+                }
+            }
+
+            //armamoss el diagrama de dispercion
+            $p= 1;
+            foreach($tabla as $t){
+                $aux2 = [
+                    'x'=>$p,
+                    'y'=>$t->ventatotal,
+                    'r'=>$t->cantidad,
+                ];
+                $p++;
+                $burbuja[]=(object) $aux2;          
+            }
+            
+            //armamos la regresion lineal
+            $regresion = [];
+            $v = 0; 
+            $zumax = 0;  $zumay = 0;  $zumaxy = 0; $zumax2 = 0;
+
+            foreach($tabla as $tb){
+                $x2 = pow($tb->cantidad,2);
+                $xy = round($tb->cantidad * $tb->ventatotal,2);
+                $zumax += $tb->cantidad;  //sumatoria de x
+                $zumay += $tb->ventatotal; //sumatoria de y
+                $zumax2 += $x2; //sumatoria de x al cuadrado
+                $zumaxy += $xy;  //sumatori de xy
+
+                $auxRegresion = [
+                    'venta' => ($v + 1),  //x
+                    'cantidad' => $tb->cantidad, //cantidad de las ventas de ese dia
+                    'total' => $tb->ventatotal,  //y
+                    'x2' => $x2,  //x al cuadrado
+                    'xy' => $xy  //x * y
+                ];
+                $regresion[] = (object) $auxRegresion;
+            }
+            $n = count($tabla);
+            $xPromedio = round(($zumax / $n),2);
+            $yPromedio = round(($zumay / $n),2);
+
+            $b = ($zumaxy - ($n * $xPromedio * $yPromedio)) / ($zumax2 - ($n * (pow($xPromedio,2)))); //obtenemos b
+            $a = $yPromedio - $b * $xPromedio;
+
+            $b = round($b,2);   $a = round($a,2);   $signo = ($b > 0) ? '+' : '-';
+
+            $ecuacionRegresionLineal = (string) $a .$signo . $b . ' * X';
+
+            $response = [
+                'status' => true,
+                'tabla' => $tabla,
+                'borbuja' => [
+                    'data' => $burbuja,
+                    'labels' => $fc_array
+                ],
+                'data' => [
+                    'tabla' => $regresion,
+                    'sumatoria' => [
+                        'sumax2' => $zumax2,
+                        'sumaxy' => $zumaxy
+                    ],
+                    'promedio' =>[
+                        'x' => $xPromedio,
+                        'y' => $yPromedio
+                    ],
+                    'constante' => [
+                        'a' => $a,
+                        'b' => $b
+                    ],
+                    'signo' =>$signo,
+                    'ecuacion' => $ecuacionRegresionLineal
+
+                ],
+            ];     
+        }else{
+            $response = [
+                'status' => false,
+                'tabla' => null,
+                'borbuja' => null
+
+            ];
+        }
+
+        echo json_encode($response);
+         
     }
 }

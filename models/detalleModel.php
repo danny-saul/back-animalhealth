@@ -3,6 +3,7 @@
 require_once 'vendor/autoload.php';
 require_once 'core/conexion.php';
 require_once 'models/sastifaccionModel.php';
+require_once 'models/evaluar_servicioModel.php';
  
 
 
@@ -18,5 +19,10 @@ class Detalle extends Model{
     public function sastifaccion(){ 
         return $this->hasMany(Sastifaccion::class);
     }
+    public function evaluar_servicio(){ 
+        return $this->hasMany(Evaluar_Servicio::class);
+    }
+
+    
 
 }

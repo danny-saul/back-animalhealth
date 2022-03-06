@@ -4,16 +4,19 @@ require_once 'app/cors.php';
 require_once 'app/request.php';
 require_once 'app/error.php';
 require_once 'app/helper.php';
+require_once 'core/conexion.php';
 require_once 'models/productoModel.php';
 require_once 'models/categoriaModel.php';
 class ProductoController
 {
 
     private $cors;
+    private $conexion;
 
     public function __construct()
     {
         $this->cors = new Cors();
+        $this->conexion = new Conexion();
 
     }
 
@@ -337,5 +340,39 @@ class ProductoController
         echo json_encode($response);
 
     }
+
+
+    public function buscarProducto($params){
+
+        $this->cors->corsJson();
+        $texto = ucfirst($params['texto']);
+        $response = [];
+
+        $sql = "SELECT producto.id, producto.categoria_id, producto.codigo, producto.nombre AS nombre_producto,
+         categoria.nombre, producto.stock, producto.precio_venta
+        FROM producto
+        INNER JOIN categoria ON producto.categoria_id = categoria.id
+        WHERE producto.estado ='A' AND producto.nombre LIKE '%$texto%'";
+      
+        $array = $this->conexion->database::select($sql);
+
+        if ($array) {
+            $response = [
+                'status' => true,
+                'mensaje' => 'Existen datos',
+                'producto' => $array,
+            ];
+        } else {
+            $response = [
+                'status' => false,
+                'mensaje' => 'No existen coincidencias',
+                'producto' => null,
+            ];
+        }
+        echo json_encode($response);
+
+
+
+    } 
 
 }
