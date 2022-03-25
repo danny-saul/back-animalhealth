@@ -87,7 +87,7 @@ class CitasController
             $dataServicio = $dc->servicios;
             $dataHoraCita = $dc->horarios_atencion;
             $dataEstadoCita = $dc->estado_cita;
-            $dataFechaCita= $dc->fecha;
+            $dataFechaCita= $dc->horarios_atencion->fecha;
 
             //substr para quitar los ceros de la derecha
             // $horario = substr($dataHoraCita->horario, 0, -3);
@@ -307,7 +307,7 @@ class CitasController
         $this->cors->corsJson();
 
         $cliente_id = intval($params['cliente_id']);
-        $cita = Citas::where('cliente_id', $cliente_id)->get();
+        $cita = Citas::where('cliente_id', $cliente_id)->orderBy('fecha','asc')->get();
 
         $data = [];
         $i = 1;
@@ -318,6 +318,7 @@ class CitasController
             $serv = $citasc->servicios->nombre_servicio;
             $hor = $citasc->horarios_atencion->horario;
             $dataEstadoCita = $citasc->estado_cita;
+            $dataFechaCita = $citasc->horarios_atencion->fecha;
 
             $estado = $citasc->estado_cita_id;
             //  $horario =$dc->horarios_atencion_id;
@@ -332,7 +333,11 @@ class CitasController
 
             $botones = '<div class="text-center">
                             <button class="btn btn-sm btn-outline-danger" onclick="cancelar_cita(' . $citasc->id . ')">
-                            <i class="fas fa-times"></i>
+                            <i class="fas fa-times"></i> Cancelar Cita
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-success" onclick="ver_cita(' . $citasc->id . ')">
+                            <i class="fas fa-clipboard-list"></i> Imprimir Cita
                             </button>
                         </div>';
 
@@ -343,8 +348,9 @@ class CitasController
                 3 => $doc->nombre . ' ' . $doc->apellido,
                 4 => $serv,
                 5 => $hor,
-                6 => $estado,
-                7 => $botones,
+                6 => $dataFechaCita,
+                7 => $estado,
+                8 => $botones,
             ];
             $i++;
 
